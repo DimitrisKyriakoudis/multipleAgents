@@ -1,6 +1,47 @@
 p = ProxySpace.push(s.boot);
 b = Buffer.readChannel(s,"C:/Users/Carl/Desktop/saxophone.wav", channels: 1);
 b.play;
+NetAddr.langPort;
+
+n = NetAddr("127.0.0.1", 12000);
+NetAddr.langPort;
+
+NetAddr.localAddr
+(
+OSCdef(\osc, {
+	|msg, time, addr, recvPort|
+
+	"hello".postln;
+}, '/test', n);
+)
+
+
+
+
+n = NetAddr.new("127.0.0.1", 12000);    // create the NetAddr
+// create the OSCFunc
+o = OSCFunc({ arg msg, time, addr, recvPort; [msg, time, addr, recvPort].postln; }, '/test', n);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 (
 ~grain.set(\wavebuf, b);
 ~trig = {Impulse.kr(MouseX.kr(10, 50))};
@@ -19,7 +60,7 @@ s.meter
 
 (
 ~gran.play;
-~gran = {
+~gran = {q
 	|buf = 0, dur = 0.1, pos = #[0.1, 0.5], envNo = (-1), dens = 10, rate = 1, amp = 0.2|
 	var trig = Impulse.kr(dens);
 	var sig = GrainBuf.ar(2, trig, dur, buf, rate, pos, 2, 0.5*WhiteNoise.kr, envNo) * amp;
@@ -71,12 +112,12 @@ x = {|freq=440, amp=0.6| MoogFF.ar(PinkNoise.ar(amp), freq).dup}.play;
 // In the following pattern, the first two keys are the ones that create the monophonic behaviour:
 (
 p = Pbind(
-    \type, \set,    // This tells it we'll be setting parameters of an existing node...
-    \id, x.nodeID,    // ...this tells it whose parameters we'll be setting
-    \args, #[\freq, \amp],  // and this tells it which parameters to set
-    \freq, Pwhite(100, 1000),
-    \dur, 2,
-    \amp, Pseq((1,0.99 .. 0.1), inf)
+	    \type, \set,    // This tells it we'll be setting parameters of an existing node...
+	    \id, x.nodeID,    // ...this tells it whose parameters we'll be setting
+	    \args, #[\freq, \amp],  // and this tells it which parameters to set
+	    \freq, Pwhite(100, 1000),
+	    \dur, 2,
+	    \amp, Pseq((1,0.99 .. 0.1), inf)
 ).play;
 )
 
@@ -110,7 +151,7 @@ x.set(\dur, 0.7);
 	var sig = 0;
 	3.do{|i|
 		var temp = SinOsc.ar(freq*(i+1), 0, 0.3);
-	sig = sig + temp;
+		sig = sig + temp;
 	};
 	sig = sig * 0.5;
 };
