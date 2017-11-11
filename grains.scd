@@ -1,77 +1,25 @@
-p = ProxySpace.push(s.boot);
 b = Buffer.readChannel(s,"C:/Users/Carl/Desktop/saxophone.wav", channels: 1);
 b.play;
 NetAddr.langPort;
 
-n = NetAddr("127.0.0.1", 12000);
+n = NetAddr("127.0.0.1", 50112);
 NetAddr.langPort;
 
-NetAddr.localAddr
+//////////////////SYNTHDEFS//////////////////
 (
-OSCdef(\osc, {
-	|msg, time, addr, recvPort|
+//Sine percussion with pitch envelope
+SynthDef(\percSine, {
+	|freq = 100, out = 0, amp = 0.5, pAtk = 0.01, pRel = 0.01,
+	pMult = 1.5, atk = 0.01, rel = 0.01, pan = 0.0, crv = (-4)|
 
-	"hello".postln;
-}, '/test', n);
-)
+	var sig, aEnv, pEnv;
+	aEnv = Env.perc(atk, rel).ar(2);
+	pEnv = Env([1, pMult, 1], [pAtk, pRel], crv).ar;
+	sig = SinOsc.ar(freq*pEnv) * aEnv;
+	Out.ar(out, Pan2.ar(sig*amp, pan));
+}).add;
 
-
-
-
-n = NetAddr.new("127.0.0.1", 12000);    // create the NetAddr
-// create the OSCFunc
-o = OSCFunc({ arg msg, time, addr, recvPort; [msg, time, addr, recvPort].postln; }, '/test', n);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-(
-~grain.set(\wavebuf, b);
-~trig = {Impulse.kr(MouseX.kr(10, 50))};
-~graindur = {0.2};
-
-~grain = {|wavebuf = 0, rate = #[0.5, 1, 1.5]|
-	GrainBuf.ar(2, ~trig.kr, ~graindur.kr, wavebuf, rate, 0.5, 2, 0, -1) * 0.2
-};
-
-~grain.play;
-)
-s.plotTree
-~grain.set(\density, 20);
-
-s.meter
-
-(
-~gran.play;
-~gran = {q
-	|buf = 0, dur = 0.1, pos = #[0.1, 0.5], envNo = (-1), dens = 10, rate = 1, amp = 0.2|
-	var trig = Impulse.kr(dens);
-	var sig = GrainBuf.ar(2, trig, dur, buf, rate, pos, 2, 0.5*WhiteNoise.kr, envNo) * amp;
-	sig = Pan2.ar(sig, 0, 1);
-	sig!2 * 0.2;
-};
-)
-~y = {MouseX.kr(0.1, 1.0)}
-~gran.set(\pos, [[0.1, ~y.kr]]);
-
-(
+//A single grain voice
 SynthDef(\grain, {
 	|buf = 0, dur = 0.1, pos = 0.5, envNo = (-1), dens = 10, rate = 1, amp = 0.2, out = 0|
 	var trig = Impulse.kr(dens);
@@ -79,84 +27,51 @@ SynthDef(\grain, {
 	Out.ar(out, sig!2);
 }).add;
 )
+/////////////////\SYNTHDEFS\/////////////////
+
+
+
+/////////////////////OSC/////////////////////
 (
-SynthDef(\sinez, {
-	|freq = #[100, 200, 300], amp = 0.2, pan = 0, out = 0|
-	var sig = 0;
-	3.do{
-		var temp = SinOsc.ar(freq);
-		sig = sig + temp;
-	};
-	sig = sig * (1/3);
-	Out.ar(out, sig!2 * amp);
-}).add;
+NetAddr.localAddr;
+//////////OSC//////////
+OSCdef(\receiver, {|...args|
+var msg = args[0].drop(1); // omit the address flag
+msg.size.postln; // you get the full message just fine
+}, "/test");
+
+//OSCFunc.trace(true); // Turn posting on
+
+
+n = NetAddr.new("127.0.0.1", 57120);    // create the NetAddr
+//v = 1000.collect{|i| i};
 )
-a = [100, 200, 325];
-x = Synth(\sinez, [\freq, [[100, 200, 300]]]);
-x.set(\freq, [~fregz.kr]);
-s.plotTree
+////////////////////\OSC\////////////////////
 
 
-e = {MouseX.kr()}
-~freqz = {[100, 200, 350]*SinOsc.kr(2).range(0.5, 1.5)};
 
+n.sendMsg("/test", *v); // send as perform list
+
+
+/////////////////Composition/////////////////
 (
-p = Pbind(
-	\instrument, \grain,
-
-)
-)
-
-x = {|freq=440, amp=0.6| MoogFF.ar(PinkNoise.ar(amp), freq).dup}.play;
-
-// In the following pattern, the first two keys are the ones that create the monophonic behaviour:
-(
-p = Pbind(
-	    \type, \set,    // This tells it we'll be setting parameters of an existing node...
-	    \id, x.nodeID,    // ...this tells it whose parameters we'll be setting
-	    \args, #[\freq, \amp],  // and this tells it which parameters to set
-	    \freq, Pwhite(100, 1000),
-	    \dur, 2,
-	    \amp, Pseq((1,0.99 .. 0.1), inf)
-).play;
+Pdef(\perc, Pbind(
+	\instrument, \percSine,
+	\dur, Pwrand([
+		Pseq([1/4], 8),
+		Pseq([1/8], 16),
+		Pseq([1/16], 8)
+	], [0.6, 0.25, 0.15], inf),
+	\freq, Prand([20, 30, 60, 120, 95, 40, 60, 180], inf).trace*2,
+	\crv, -50,
+	\atk, 0.005,
+	\rel, Pwhite(0.1, 0.8),
+	\pan, Pwhite(-0.9, 0.9),
+	\pAtk, 0.01,
+	\pMult, 20
+));
 )
 
-p.stop
-x.free
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-x = Synth(\grain, [\buf, b]);
-x.set(\pos, 0.62);
-x.set(\dur, 0.7);
-
-
-
-
-(
-~test.set(\freq, 200);
-~test = {|freq = 800|
-	var sig = 0;
-	3.do{|i|
-		var temp = SinOsc.ar(freq*(i+1), 0, 0.3);
-		sig = sig + temp;
-	};
-	sig = sig * 0.5;
-};
-
-
-
-~test.play;
-)
+Pdef(\perc).play;
+Pdef(\perc).stop;
+////////////////\Composition\////////////////
