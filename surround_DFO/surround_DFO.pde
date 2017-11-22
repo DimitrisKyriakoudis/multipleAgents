@@ -48,7 +48,7 @@ void setup() {
 
 
   //fullScreen();
-  startTime = second();
+  startTime = millis();
 
   frameRate(60);
   //textSize(30);
@@ -57,28 +57,51 @@ void setup() {
 
   pop = new Population();
   pop.update();
+  saveState();
+  message();
 }
 
 /////////////////////////////////////////////////
 void draw() {
-  drawBackground();  //image(image, 0, 0);
-  //drawText();
+  float timer = 2*1000;
+  float t = millis();
+  println(startTime);
 
-  //println("iteration ", frameCount - reference_frame);
-  if (frameCount%20==0) {
-    pop.update();
-    save();
+
+  if (t-startTime > timer) {
+    message();
+    println("HELLO");
+
+    startTime = millis();
   }
-  //interpolate();
+  //drawBackground();  //image(image, 0, 0);
+  ////drawText();
+
+  ////println("iteration ", frameCount - reference_frame);
+  //if (frameCount%20==0) {
+  //  pop.update();
+  //  save();
+  //}
+  ////interpolate();
 
 
-  float f = frameCount%20;
-  f = f/20;
-  println("f is ", f);
-  pop.drawAgents(f);
+  //float f = frameCount%20;
+  //f = f/20;
+  //println("f is ", f);
+  //pop.drawAgents(f);
+}
+void message() {
+  OscMessage arrayMsg = new OscMessage("/test");
+
+  int n = 3;
+  for (int i = 0; i < n; i++) {
+    arrayMsg.add(random(-1, 1));
+  }
+
+  osc.send(arrayMsg, supercollider);
 }
 
-void save() {
+void saveState() {
   oldPos = newPos;
   for (int i = 0; i<population_size; i++) {
     newPos[i] = pop.grains.get(i).pos[0];

@@ -1,12 +1,29 @@
 b = Buffer.readChannel(s,"C:/Users/Carl/Desktop/saxophone.wav", channels: 1);
 b.play;
+NetAddr.localAddr;
+n = NetAddr("localhost", 57110);
 NetAddr.langPort;
 
-n = NetAddr("127.0.0.1", 50112);
-NetAddr.langPort;
+
+thisProcess.openUDPPort(1121); // attempt to open 1121
+thisProcess.openPorts; // list all open ports
+
+
+(
+////////////////////SETUP/////////////////////
+s.waitForBoot(
+
+
+	~numChannels = 2;
+
+
+OSCdef(\processing, {|msg, time, addr, recvPort|
+	[msg, time, addr, recvPort].postln;
+}, );
+
 
 //////////////////SYNTHDEFS//////////////////
-(
+
 //Sine percussion with pitch envelope
 SynthDef(\percSine, {
 	|freq = 100, out = 0, amp = 0.5, pAtk = 0.01, pRel = 0.01,
@@ -19,15 +36,34 @@ SynthDef(\percSine, {
 	Out.ar(out, Pan2.ar(sig*amp, pan));
 }).add;
 
-//A single grain voice
-SynthDef(\grain, {
-	|buf = 0, dur = 0.1, pos = 0.5, envNo = (-1), dens = 10, rate = 1, amp = 0.2, out = 0|
-	var trig = Impulse.kr(dens);
-	var sig = GrainBuf.ar(2, trig, dur, buf, rate, pos, 2, 0.5*WhiteNoise.kr, envNo) * amp;
+	SynthDef(\grainSine, {
+	|dur = 0.1, freq = 100, pan = 0.5, ratio = 2, envNo = (-1), index = 10, dens = 10, amp = 0.2, out = 0|
+	var t = 20;
+	var trig = Impulse.kr(Lag.kr(dens, t));
+	var sig = GrainSin.ar(~numChannels, trig, dur, Lag.kr(freq, t), freq*ratio, index, pan, envNo);
+	sig = sig * amp;
+
 	Out.ar(out, sig!2);
 }).add;
-)
+
+//A single FM grain voice
+SynthDef(\grainFM, {
+	|dur = 0.1, freq = 100, pan = 0.5, ratio = 2, envNo = (-1), index = 10, dens = 10, amp = 0.2, out = 0|
+	var t = 20;
+	var trig = Impulse.kr(Lag.kr(dens, t));
+	var sig = GrainFM.ar(~numChannels, trig, dur, Lag.kr(freq, t), freq*ratio, index, pan, envNo);
+	sig = sig * amp;
+
+	Out.ar(out, sig!2);
+}).add;
 /////////////////\SYNTHDEFS\/////////////////
+
+
+"Finished Setup".postln;
+);
+)
+////////////////////\SETUP\///////////////////
+
 
 
 
@@ -36,8 +72,8 @@ SynthDef(\grain, {
 NetAddr.localAddr;
 //////////OSC//////////
 OSCdef(\receiver, {|...args|
-var msg = args[0].drop(1); // omit the address flag
-msg.size.postln; // you get the full message just fine
+	var msg = args[0].drop(1); // omit the address flag
+	msg.size.postln; // you get the full message just fine
 }, "/test");
 
 //OSCFunc.trace(true); // Turn posting on
