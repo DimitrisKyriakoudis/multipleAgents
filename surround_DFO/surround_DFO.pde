@@ -12,7 +12,10 @@ float gDamt = 0.1;
 //float gDamt
 int population_size = 12;
 int nDimensions = 7;
-float updateRate = 0.5;
+float updateTime = 1.5;
+int updateCounter = 0;
+int msgEvery = 3;
+
 
 boolean torus = true; //chooses between wrapping around the search space or not
 boolean use_only_closest_neighbor = false; //chooses between using only the closest neighbor in the SS or the fittest between two neighbors
@@ -22,7 +25,6 @@ float gPan, gDens, gInd, gRat, gDur, gAmp, gFreq;
 float[] gGoal = new float[nDimensions];// = {0};
 
 
-int updateCounter = 0;
 
 
 float radius = 200;
@@ -64,8 +66,6 @@ void setup() {
 /////////////////////////////////////////////////
 void draw() {
   update();
-
-  //println(gPan, gDens, gInd, gRat, gDur, gAmp);
   pop.drawAgents();
 }
 
@@ -101,11 +101,15 @@ void message() {
 void update() {
   drawBackground();
 
-  float timer = updateRate*1000;
+  float timer = updateTime*1000;
   float t = millis();
 
   if (t-startTime > timer) {
-    message();
+    //send update message every few updates
+    if (updateCounter%msgEvery == 0)
+      message();
+
+    updateCounter += 1;
     pop.update();
     startTime = millis();
   }
@@ -125,31 +129,32 @@ void updateParams() {
 
 void oscEvent(OscMessage msg) {
   int num = msg.get(0).intValue();
+  float val = msg.get(1).intValue()/127.0;
 
   if (num == 1)
-    gPan = msg.get(1).intValue()/127.0;
+    gPan = val;
 
   if (num == 2)
-    gDens = msg.get(1).intValue()/127.0;
+    gDens = val;
 
   if (num == 3)
-    gInd = msg.get(1).intValue()/127.0;
+    gInd = val;
 
   if (num == 4)
-    gRat = msg.get(1).intValue()/127.0;
+    gRat = val;
 
   if (num == 5)
-    gDur = msg.get(1).intValue()/127.0;
+    gDur = val;
 
   if (num == 6)
-    gAmp = msg.get(1).intValue()/127.0;
+    gAmp = val;
 
   if (num == 7)
-    gDT = msg.get(1).intValue()/127.0;
+    gDT = val;
 
   if (num == 8)
-    gDamt = msg.get(1).intValue()/127.0;
+    gDamt = val;
 
   if (num == 9)
-    gFreq = msg.get(1).intValue()/127.0;
+    gFreq = val;
 }

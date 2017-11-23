@@ -58,7 +58,11 @@ s.waitForBoot(
 		};
 	}, '/amp');
 
-
+	OSCdef(\freq, {|msg|
+	~numGrains.do{ |i|
+			~grains[i].set(\freq, msg[i+1].linlin(0, 1, 80, 120));
+		};
+	}, '/freq');
 
 /////////////MIDI/////////////
 	MIDIClient.init;
