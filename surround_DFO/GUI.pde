@@ -10,13 +10,8 @@ void initGUI() {
     .setPosition(505, start)
     .setRange(0.001, 0.5)
     .setSize(100, 30)
-    .setValue(DT);
+    .setValue(gDT);
 
-  cp5.addSlider("number_of_tests")
-    .setPosition(505, start+spacing)
-    .setRange(1, 500)
-    .setSize(100, 30)
-    .setValue(number_of_tests);
 
   cp5.addSlider("population_size")
     .setPosition(505, start+2*spacing)

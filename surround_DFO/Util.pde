@@ -19,7 +19,7 @@ void drawBackground() {
   background(51);
   translate(width/2, height/2);
   float r = radius;
-  int n = 8;
+  int n = 6;
 
   for (int i = 0; i < n; i++) {
     float a = (TWO_PI)*i/n;
@@ -30,7 +30,7 @@ void drawBackground() {
     ellipse(x, y, 50, 50);
   }
 
-  float a = gGoal[0];
+  float a = gGoal[0]*TWO_PI;
   float x = r * cos(a);
   float y = r * sin(a);
 

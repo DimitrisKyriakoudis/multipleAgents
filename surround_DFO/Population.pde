@@ -1,12 +1,10 @@
 class Population {
   ArrayList<Grain> grains = new ArrayList<Grain>();
   float[][] pos = new float[population_size][nDimensions];
-  float dt = DT;
-  int nTests = number_of_tests;
   boolean isTorus = torus;
   //holds index of the best fly
   int bestFly;
-  float dimRange = TWO_PI;
+  float dimRange = 1;
 
   //Constructor
   Population() {
@@ -51,13 +49,18 @@ class Population {
         grains.get(i).update(grains.get(neighbor), grains.get(bestFly));
 
         float f = random(1);
-        if (f < dt) {
-          float[] dims = grains.get(i).pos;
-          float ofst = pow(random(0, randOffset), 2.5)*TWO_PI;
-          if (random(1)<0.5)
-            ofst *= -1;
 
-          dims[0] += ofst;
+        //DISTURBANCE
+        if (f < gDT) {
+          float[] dims = grains.get(i).pos;
+          for (int dim = 0; dim < nDimensions; dim++) {
+            float ofst = pow(random(0, gDamt), 2.5);
+            if (random(1)<0.5)
+              ofst *= -1;
+
+            dims[dim] += ofst;
+          }
+
           grains.get(i).set(dims);
         }
 
@@ -132,10 +135,10 @@ class Population {
   }
 
   /////////////////////////////////////////////////
-  void drawAgents(float f) {
+  void drawAgents() {
     for (int i = 0; i < grains.size(); i++) {
       float r = radius;
-      float a = lerp(oldPos[i], newPos[i], f);
+      float a = grains.get(i).pos[0]*TWO_PI;
       float x = r * cos(a);
       float y = r * sin(a);
 
