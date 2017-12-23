@@ -4,7 +4,7 @@ NetAddr.langPort;
 s.meter.alwaysOnTop_(true);
 
 b = Buffer.alloc(s, 131072, 6);
-
+Buffer.freeAll
 b.write("C:/Users/Carl/Desktop/multichannel.wav", "wav", "int16", 0, 0, true);
 
 (
@@ -18,7 +18,7 @@ s.waitForBoot(
 	//Control Parameters
 	~numChannels = 6;
 	~numGrains = 12;
-	~lagTime = 3;
+	~lagTime = 6;
 	~processingAdr = NetAddr("127.0.0.1", 12000);
 
 
@@ -54,7 +54,7 @@ s.waitForBoot(
 
 	OSCdef(\amp, {|msg|
 	~numGrains.do{ |i|
-			~grains[i].set(\amp, msg[i+1].linlin(0, 1, 0, 0.2));
+			~grains[i].set(\amp, msg[i+1].linexp(0.0001, 1, 0.0001, 1/6*0.9));
 		};
 	}, '/amp');
 
@@ -80,7 +80,7 @@ s.waitForBoot(
 		if(num == 58, {~processingAdr.sendMsg('sc', 8, val)}, {});
 		if(num == 17, {~processingAdr.sendMsg('sc', 9, val)}, {}); //freq, need OSC
 
-		[val, num].postln;
+		//[val, num].postln;
 
 	}, [16, 20, 24, 28, 46, 50, 54, 58,
 		17, 21, 25, 29, 47, 51, 55, 59,
@@ -106,7 +106,7 @@ SynthDef(\percSine, {
 
 //A single FM grain voice
 SynthDef(\grainFM, {
-	|duration = 0.1, freq = 100, pan = 0.0, ratio = 1, envNo = (-1), index = 1, dens = 10, amp = 0.0, out = 0, t = 2|
+	|duration = 0.1, freq = 100, pan = 0.0, ratio = 1, envNo = (-1), index = 1, dens = 10, amp = 0.0, out = 0, t = 10|
 		var trig = Impulse.kr(Lag.kr(dens, t));
 		var f = Lag.kr(freq, t);
 		var modFreq = f * Lag.kr(ratio, t);
@@ -146,14 +146,14 @@ s.plotTree
 (
 ~grains.do{
 	|synth, i|
-	synth.set(\amp, 0.1, \pan, rrand(0.0, 2.0), \t, 15);
+	synth.set(\t, 6);
 };
 )
 
 (
 ~grains.do{
 	|synth, i|
-	synth.set(\t, 8);
+	synth.set(\t, 9);
 };
 )
 
@@ -167,7 +167,7 @@ s.plotTree
 
 
 
-
+MIDIdef.all
 
 
 
@@ -223,10 +223,6 @@ Pdef(\perc).stop;
 
 
 
-(
-MIDIdef.cc(\test1, {arg ...args; args.postln}); // match cc 1
-
-)
 
 
 
@@ -256,29 +252,6 @@ x.set(\pan, -1);
 
 ~array = Array.fill(3, 0);
 
-
-(
-OSCdef(\panTracking, {
-	|msg|
-	msg.postln;
-}, '/pan');
-
-OSCdef(\processing, {
-	|msg|
-	msg = msg.drop(1);
-	~n.do{
-		|synth, i|
-		synth.set(\pan, msg[i]);
-	};
-	msg.postln;
-
-}, '/test');
-
-OSCdef(\panUpdating, {
-	|msg|
-	msg.postln;
-}, '/setControls');
-)
 
 s.meter
 ~freqs = [300, 150];

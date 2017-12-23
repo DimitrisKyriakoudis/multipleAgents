@@ -12,9 +12,9 @@ float gDamt = 0.1;
 //float gDamt
 int population_size = 12;
 int nDimensions = 7;
-float updateTime = 1.5;
+float updateTime = 1;
 int updateCounter = 0;
-int msgEvery = 3;
+int msgEvery = 2;
 
 
 boolean torus = true; //chooses between wrapping around the search space or not
@@ -47,7 +47,7 @@ void setup() {
   gInd = 0.1; 
   gRat = 0.1; 
   gDur = 0.3;
-  gAmp = 0.1; 
+  gAmp = 0.05; 
   gFreq = 0.5;
 
 
