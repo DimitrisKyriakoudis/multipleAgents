@@ -3,8 +3,12 @@ import oscP5.*;
 import netP5.*;
 ControlP5 cp5;
 
+/////////////////_OSC_/////////////////
 OscP5 osc;
 NetAddress supercollider;
+
+/////////////////_GUI_/////////////////
+
 
 //Global parameters
 float gDT = 0.1;
