@@ -46,11 +46,11 @@ void ofApp::draw() {
 void ofApp::keyPressed(int key) {
 	if (key == 't') {
 		numAgents++;
-		swarm.resizeAgents(numAgents);
+		swarm.resizeSwarm(numAgents);
 	}
 	if (key == 'h') {
 		numAgents--;
-		swarm.resizeAgents(numAgents);
+		swarm.resizeSwarm(numAgents);
 	}
 
 	if (key == 'c') {

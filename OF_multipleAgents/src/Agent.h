@@ -14,15 +14,15 @@ public:
 	std::vector<float> values;
 
 	void setValues(const std::vector<float>&);
-	void update(const Agent&);
-	void update(const Agent&, const Agent&);
-
+	void update(const Agent&, const Agent&, const std::vector<float>&, bool);
 
 	float getFitness();
 	void updateFitness(const std::vector<float>&);
 
 	void removeDimension();
 	void addDimension(float);
+	float calcDistance(const Agent&);
+
 
 private:
 	float fitness;
@@ -30,7 +30,6 @@ private:
 	ofColor standardC;
 	ofColor bestC;
 
-	float calcDistance(const Agent&);
 	//float torus(float);
 };
 

@@ -1,21 +1,31 @@
 #include "Swarm.h"
 
 Swarm::Swarm() {
+	//Initialise parameters to default values
+	//---------------------------------------
 	numAgents = 10;
 	numDimensions = 2;
+
+	boolElitist = true;
+
 	initDt = 0.05;
 	initDamt = 0.1;
 	initDexp = 1;
+	initUpdateAmt = 1;
 	initValue = 0.0;
 
 	for (int i = 0; i < numDimensions; i++) {
-		dThresh.push_back(initDt);
-		dAmt.push_back(initDamt);
-		dExp.push_back(initDexp);
+		dThreshs.push_back(initDt);
+		dAmts.push_back(initDamt);
+		dExps.push_back(initDexp);
+		updateAmts.push_back(initUpdateAmt);
 		goals.push_back(initValue);
 		//tempValues.push_back(initValue);
 	}
 
+	//Initialise agents with defaults
+	//TODO: initialise at starting value instead of random
+	//---------------------------------------
 	for (int i = 0; i < numAgents; i++) {
 		std::vector<float> tempValues;
 		for (int i = 0; i < numDimensions; i++) {
@@ -24,6 +34,90 @@ Swarm::Swarm() {
 
 		Agent a = Agent(tempValues);
 		agents.push_back(a);
+	}
+
+	//Initialise GUI
+	//---------------------------------------
+	gui.setup("Parameters");
+	for (int i = 0; i < numDimensions; i++) {
+		ofParameter<float> temp;
+		dts.push_back(temp);
+		gui.add(dts[i].set("test", 0.5, 0, 1));
+	}
+
+	//TODO: Initialise OSC (?)
+	//---------------------------------------
+
+
+
+
+}
+
+//--------------------------------------------------------------
+void Swarm::update() {
+	updateFitnesses(goals);
+	updateAgents(boolElitist, updateAmts);
+	draw();
+}
+
+//--------------------------------------------------------------
+void Swarm::updateAgents(bool elitist, const std::vector<float>& updateAmt) {
+	for (int i = 0; i < agents.size(); i++) {
+		int bestNeighborIndx = findBestNeighbor(i);
+		agents[i].update(agents[bestNeighborIndx], agents[bestAgentIndx], updateAmt, elitist);
+	}
+}
+
+//--------------------------------------------------------------
+int Swarm::findBestNeighbor(int currentAgent) {
+	float minDist = FLT_MAX;
+	int firstNeighbor = 0;
+	int secondNeighbor = 0;
+
+	//Find first neighbor
+	for (int i = 0; i < agents.size(); i++) {
+		//Skip if we're testing against itself
+		if (i == currentAgent)
+			continue;
+
+		float d = agents[currentAgent].calcDistance(agents[i]);
+		if (d < minDist) {
+			firstNeighbor = i;
+			minDist = d;
+		}
+	}
+	//Find second neighbor
+	minDist = FLT_MAX; // reset minDist
+	for (int i = 0; i < agents.size(); i++) {
+		//Skip if we're testing against itself or the first neighbor
+		if (i == currentAgent || i == firstNeighbor)
+			continue;
+
+		float d = agents[currentAgent].calcDistance(agents[i]);
+		if (d < minDist) {
+			secondNeighbor = i;
+			minDist = d;
+		}
+	}
+
+	if (agents[firstNeighbor].getFitness() < agents[secondNeighbor].getFitness())
+		return firstNeighbor;
+	else return secondNeighbor;
+}
+
+//--------------------------------------------------------------
+void Swarm::updateFitnesses(const std::vector<float>& goals) {
+	float minScore = FLT_MAX;
+	//int indexOfBest = 0;
+
+	for (int i = 0; i < agents.size(); i++) {
+		agents[i].updateFitness(goals);
+
+		float f = agents[i].getFitness();
+		if (f < minScore) {
+			bestAgentIndx = i; //update index of globally best agent
+			minScore = f;
+		}
 	}
 }
 
@@ -35,12 +129,16 @@ int Swarm::size() {
 //--------------------------------------------------------------
 void Swarm::draw() {
 	for (int i = 0; i < agents.size(); i++) {
-		agents[i].draw(false);
+		if (i == bestAgentIndx)
+			agents[i].draw(true);
+		else agents[i].draw(false);
 	}
+
+	gui.draw();
 }
 
 //--------------------------------------------------------------
-void Swarm::resizeAgents(int newSize) {
+void Swarm::resizeSwarm(int newSize) {
 	int currentSize = agents.size();
 	int diff = newSize - currentSize;
 	//If we should increase
@@ -73,7 +171,15 @@ void Swarm::resizeDimensions(int newNum) {
 		for (int i = 0; i < agents.size(); i++) {
 			//add as many dimensions as needed
 			for (int k = 0; k < diff; k++) agents[i].addDimension(initValue);
-		} 
+		}
+
+		//add more parameters
+	/*	for (int k = 0; k < diff; k++) {
+			ofParameter<float> temp;
+			dts.push_back(temp);
+			gui.add(dts[dts.size()-1].set("test", 0.5, 0, 1));
+		}*/
+
 		numDimensions += diff; //update global number of dimensions
 	}
 

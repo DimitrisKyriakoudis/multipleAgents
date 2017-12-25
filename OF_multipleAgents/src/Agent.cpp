@@ -14,25 +14,29 @@ Agent::Agent(const vector<float>& vals) {
 	values = vals;
 }
 
-void Agent::update(const Agent& bestNeighbor) {
-	for (int i = 0; i < values.size(); i++) {
-		float current = values[i];
-		float neighbor = bestNeighbor.values[i];
-		float r = ofRandom(0, 1);
-		float newVal = neighbor + r*(neighbor - current);
-		newVal = ofClamp(newVal, 0, 1);
-		values[i] = newVal;
-	}
-}
+//void Agent::update(const Agent& bestNeighbor, const std::vector<float>& updateAmt) {
+//	for (int i = 0; i < values.size(); i++) {
+//		float current = values[i];
+//		float neighbor = bestNeighbor.values[i];
+//		float r = ofRandom(0, updateAmt[i]);
+//		float newVal = neighbor + r*(neighbor - current);
+//		newVal = ofClamp(newVal, 0, 1);
+//		values[i] = newVal;
+//	}
+//}
 
-void Agent::update(const Agent& bestNeighbor, const Agent& bestInSwarm) {
+void Agent::update(const Agent& bestNeighbor, const Agent& bestInSwarm, const std::vector<float>& updateAmt, bool elitist) {
 	for (int i = 0; i < values.size(); i++) {
 		float current = values[i];
 		float neighbor = bestNeighbor.values[i];
 		float best = bestInSwarm.values[i];
-		float r = ofRandom(0, 1);
-		float newVal = neighbor + r*(best - current);
+		float r = ofRandom(0, updateAmt[i]);
+
+		float newVal;
+		if (elitist) newVal = neighbor + r*(best - current);
+		else newVal = neighbor + r*(neighbor - current);
 		newVal = ofClamp(newVal, 0, 1);
+
 		values[i] = newVal;
 	}
 }
@@ -86,7 +90,7 @@ void Agent::draw(bool isBest) {
 	}
 	else
 		ofSetColor(standardC);*/
-	float r = drawSize*3;
+	float r = drawSize * 3;
 	ofSetColor(standardC);
 	//ofFill();
 	ofDrawCircle(values[0], values[1], r);
