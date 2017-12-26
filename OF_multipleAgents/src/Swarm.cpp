@@ -20,9 +20,9 @@ Swarm::Swarm() {
 	/*goals.push_back*/
 
 	for (int i = 0; i < numDimensions; i++) {
-		dThreshs.push_back(initDt);
-		dAmts.push_back(initDamt);
-		dExps.push_back(initDexp);
+		distThreshs.push_back(initDt);
+		distAmts.push_back(initDamt);
+		distExps.push_back(initDexp);
 		updateAmts.push_back(initUpdateAmt);
 		updateExps.push_back(initUpdateExp);
 		goals.push_back(initGoals);
@@ -72,17 +72,25 @@ void Swarm::setGoals(float x, float y) {
 	goals[1] = y;
 }
 
+//--------------------------------------------------------------
 void Swarm::updateSwarm() {
 
 	if (boolDisturbBeforeUpdate) {
-		disturbAgents(dThreshs, dExps, dAmts);
+		//Supply either a vector of thresholds or a single threshold for all dimensions
+		if (boolDisturbSeparately)
+			disturbAgents(distThreshs, distExps, distAmts);
+		 else disturbAgents(singleThresh, distExps, distAmts);
+
 		updateFitnesses(goals);
 		updateAgents(boolElitist, updateAmts, updateExps);
 	}
 	else {
 		updateFitnesses(goals);
 		updateAgents(boolElitist, updateAmts, updateExps);
-		disturbAgents(dThreshs, dExps, dAmts);
+		
+		if (boolDisturbSeparately)
+			disturbAgents(distThreshs, distExps, distAmts);
+		else disturbAgents(singleThresh, distExps, distAmts);
 	}
 }
 
@@ -94,6 +102,7 @@ void Swarm::updateAgents(bool elitist, const std::vector<float>& updateAmt, cons
 	}
 }
 
+//--------------------------------------------------------------
 void Swarm::disturbAgents(const std::vector<float>& thresholds, const std::vector<float>& exponents, const std::vector<float>& amounts) {
 	if (thresholds.size() != numDimensions || exponents.size() != numDimensions || amounts.size() != numDimensions) {
 		std::cout << "Swarm::disturbAgents -> vector sizes don't match" << std::endl;
@@ -102,6 +111,18 @@ void Swarm::disturbAgents(const std::vector<float>& thresholds, const std::vecto
 	else {
 		for (int i = 0; i < agents.size(); i++) {
 			agents[i].disturb(thresholds, exponents, amounts);
+		}
+	}
+}
+//-------------------Overloaded-------------------
+void Swarm::disturbAgents(float threshold, const std::vector<float>& exponents, const std::vector<float>& amounts) {
+	if (exponents.size() != numDimensions || amounts.size() != numDimensions) {
+		std::cout << "Swarm::disturbAgents -> vector sizes don't match" << std::endl;
+		return;
+	}
+	else {
+		for (int i = 0; i < agents.size(); i++) {
+			agents[i].disturb(threshold, exponents, amounts);
 		}
 	}
 }
@@ -214,7 +235,7 @@ void Swarm::resizeDimensions(int newNum) {
 		//Add as many dimension parameters to match
 		for (int k = 0; k < diff; k++) addDimParams();
 
-		//add more parameters
+		//add more GUI parameters
 	/*	for (int k = 0; k < diff; k++) {
 			ofParameter<float> temp;
 			dts.push_back(temp);
@@ -244,17 +265,17 @@ void Swarm::resizeDimensions(int newNum) {
 }
 
 void Swarm::addDimParams() {
-	dThreshs.push_back(initDt);
-	dAmts.push_back(initDamt);
-	dExps.push_back(initDexp);
+	distThreshs.push_back(initDt);
+	distAmts.push_back(initDamt);
+	distExps.push_back(initDexp);
 	updateAmts.push_back(initUpdateAmt);
 	goals.push_back(initValue);
 }
 
 void Swarm::removeDimParams() {
-	dThreshs.pop_back();
-	dAmts.pop_back();
-	dExps.pop_back();
+	distThreshs.pop_back();
+	distAmts.pop_back();
+	distExps.pop_back();
 	updateAmts.pop_back();
 	goals.pop_back();
 }

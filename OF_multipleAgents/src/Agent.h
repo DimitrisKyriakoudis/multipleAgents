@@ -18,7 +18,9 @@ public:
 
 	float getFitness();
 	void updateFitness(const std::vector<float>&);
+
 	void disturb(const std::vector<float>&, const std::vector<float>&, const std::vector<float>&);
+	void disturb(float, const std::vector<float>&, const std::vector<float>&);
 
 	void removeDimension();
 	void addDimension(float);
