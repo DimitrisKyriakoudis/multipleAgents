@@ -7,7 +7,8 @@ Swarm::Swarm() {
 	numDimensions = 2;
 
 	boolElitist = true;
-	boolDisturbBeforeUpdate = true;
+	boolDisturbBeforeUpdate = false;
+	boolDisturbSeparately = false;
 
 	initDt = 0.05;
 	initDamt = 0.8;
@@ -16,8 +17,7 @@ Swarm::Swarm() {
 	initUpdateExp = 1.0;
 	initValue = 0.0;
 	initGoals = 0.5;
-
-	/*goals.push_back*/
+	singleThresh = initDt;
 
 	for (int i = 0; i < numDimensions; i++) {
 		distThreshs.push_back(initDt);
@@ -55,7 +55,39 @@ Swarm::Swarm() {
 	//---------------------------------------
 
 
+	dThreshsPanel = ofxDatGui(ofxDatGuiAnchor::TOP_LEFT);
+	dAmtsPanel = ofxDatGui(ofxDatGuiAnchor::TOP_LEFT);
+	dExpsPanel = ofxDatGui(ofxDatGuiAnchor::TOP_LEFT);
+	uAmtsPanel = ofxDatGui(ofxDatGuiAnchor::TOP_LEFT);
+	uExpsPanel = ofxDatGui(ofxDatGuiAnchor::TOP_LEFT);
 
+	dThreshsPanel.addHeader("Disturbance Thresholds");
+	dAmtsPanel.addHeader("Disturbance Amounts");
+	dExpsPanel.addHeader("Disturbance Amount Exponents");
+	uAmtsPanel.addHeader("Update Amounts");
+	uExpsPanel.addHeader("Update Amount Exponents");
+
+
+	for (int i = 0; i < numDimensions; i++) {
+		stringstream s;
+		s << "Dimension " << i + 1;
+
+		//Disturbance Thresholds
+		guiDTs.push_back(dThreshsPanel.addSlider(s.str(), 0, 1));
+		guiDTs[i]->bind(distThreshs[i]);
+		//Disturbance Amounts
+		guiDAmts.push_back(dAmtsPanel.addSlider(s.str(), 0, 1));
+		guiDAmts[i]->bind(distAmts[i]);
+		//Disturbance Exponents
+		guiDExps.push_back(dExpsPanel.addSlider(s.str(), 0, 1));
+		guiDExps[i]->bind(distExps[i]);
+		//Update Amounts
+		guiUAmts.push_back(uAmtsPanel.addSlider(s.str(), 0, 1));
+		guiUAmts[i]->bind(updateAmts[i]);
+		//Update Exponents
+		guiUExps.push_back(uExpsPanel.addSlider(s.str(), 0, 1));
+		guiUExps[i]->bind(updateExps[i]);
+	}
 
 }
 
@@ -79,7 +111,7 @@ void Swarm::updateSwarm() {
 		//Supply either a vector of thresholds or a single threshold for all dimensions
 		if (boolDisturbSeparately)
 			disturbAgents(distThreshs, distExps, distAmts);
-		 else disturbAgents(singleThresh, distExps, distAmts);
+		else disturbAgents(singleThresh, distExps, distAmts);
 
 		updateFitnesses(goals);
 		updateAgents(boolElitist, updateAmts, updateExps);
@@ -87,7 +119,7 @@ void Swarm::updateSwarm() {
 	else {
 		updateFitnesses(goals);
 		updateAgents(boolElitist, updateAmts, updateExps);
-		
+
 		if (boolDisturbSeparately)
 			disturbAgents(distThreshs, distExps, distAmts);
 		else disturbAgents(singleThresh, distExps, distAmts);
@@ -110,11 +142,12 @@ void Swarm::disturbAgents(const std::vector<float>& thresholds, const std::vecto
 	}
 	else {
 		for (int i = 0; i < agents.size(); i++) {
-			agents[i].disturb(thresholds, exponents, amounts);
+			if (i != bestAgentIndx) //Don't disturb the best agent
+				agents[i].disturb(thresholds, exponents, amounts);
 		}
 	}
 }
-//-------------------Overloaded-------------------
+//-------------------overloaded-------------------
 void Swarm::disturbAgents(float threshold, const std::vector<float>& exponents, const std::vector<float>& amounts) {
 	if (exponents.size() != numDimensions || amounts.size() != numDimensions) {
 		std::cout << "Swarm::disturbAgents -> vector sizes don't match" << std::endl;
@@ -122,7 +155,8 @@ void Swarm::disturbAgents(float threshold, const std::vector<float>& exponents, 
 	}
 	else {
 		for (int i = 0; i < agents.size(); i++) {
-			agents[i].disturb(threshold, exponents, amounts);
+			if (i != bestAgentIndx) //Don't disturb the best agent
+				agents[i].disturb(threshold, exponents, amounts);
 		}
 	}
 }
@@ -189,11 +223,11 @@ int Swarm::size() {
 void Swarm::draw() {
 	for (int i = 0; i < agents.size(); i++) {
 		if (i == bestAgentIndx)
-			agents[i].draw(true);
+			continue;
 		else agents[i].draw(false);
 	}
-
-	gui.draw();
+	agents[bestAgentIndx].draw(true);
+	//gui.draw();
 }
 
 //--------------------------------------------------------------

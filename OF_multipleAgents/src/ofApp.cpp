@@ -38,6 +38,8 @@ void ofApp::setup() {
 //--------------------------------------------------------------
 void ofApp::update() {
 	swarm.setGoals((float)ofGetMouseX() / ofGetWidth(), (float)ofGetMouseY() / ofGetHeight());
+	
+	
 	if (isRunning)
 		swarm.update();
 }

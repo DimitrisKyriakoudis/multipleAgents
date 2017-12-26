@@ -1,10 +1,14 @@
 #pragma once
 
-#include "vector"
-#include "ofMain.h"
+#include <string>
+#include <sstream>
+#include <vector>
 #include "math.h"
+
+#include "ofMain.h"
 #include "Agent.h"
 #include "ofxGui.h"
+#include "ofxDatGui.h"
 
 class Swarm{
 public:
@@ -37,11 +41,14 @@ private:
 	void updateSwarm();
 	void updateFitnesses(const std::vector<float>&);
 	void updateAgents(bool, const std::vector<float>&, const std::vector<float>&);
-	int findBestNeighbor(int);
+	int  findBestNeighbor(int);
 	void addDimParams();
 	void removeDimParams();
 
+	double time, timer, updateEvery;
+
 	std::vector<Agent> agents;
+
 	float			   singleThresh; //Single threshold for all dimensions
 	std::vector<float> distThreshs; //individual thresholds for each dimension
 	std::vector<float> distAmts;
@@ -67,7 +74,18 @@ private:
 	float initUpdateExp;
 	float initGoals;
 
-	ofxPanel gui;
+	//ofxPanel gui;
+	ofxDatGui dThreshsPanel;
+	ofxDatGui dAmtsPanel;
+	ofxDatGui dExpsPanel;
+	ofxDatGui uAmtsPanel;
+	ofxDatGui uExpsPanel;
+
+	std::vector<ofxDatGuiSlider*> guiDTs;
+	std::vector<ofxDatGuiSlider*> guiDAmts;
+	std::vector<ofxDatGuiSlider*> guiDExps;
+	std::vector<ofxDatGuiSlider*> guiUAmts;
+	std::vector<ofxDatGuiSlider*> guiUExps;
 
 
 };

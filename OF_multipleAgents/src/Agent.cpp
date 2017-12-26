@@ -70,15 +70,34 @@ float Agent::calcDistance(const Agent& otherAgent) {
 //--------------------------------------------------------------
 void Agent::disturb(const std::vector<float>& thresholds, const std::vector<float>& exponents, const std::vector<float>& amounts) {
 	//Make sure sizes match
-	if(thresholds.size() != values.size() || amounts.size() != values.size()) {
+	if (thresholds.size() != values.size() || amounts.size() != values.size()) {
 		std::cout << "Agent::disturb -> vector sizes don't match" << std::endl;
 		return;
 	}
-	
+
 	//For every dimension:
 	for (int i = 0; i < values.size(); i++) {
 		float r = ofRandom(0, 1); //calculate a probability
 		if (r < thresholds[i]) { //and if less than that dimension's threshold
+			float offset = pow(ofRandom(0, 1), exponents[i]) * amounts[i]; //Exponent shapes the distribution curve, amount scales 
+			if (ofRandom(0, 1) < 0.5) //50% chance it's negative
+				offset *= -1;
+			values[i] = ofClamp(values[i] + offset, 0, 1);
+		}
+	}
+}
+
+void Agent::disturb(float threshold, const std::vector<float>& exponents, const std::vector<float>& amounts) {
+	//Make sure sizes match
+	if (amounts.size() != values.size() || exponents.size() != values.size()) {
+		std::cout << "Agent::disturb -> vector sizes don't match" << std::endl;
+		return;
+	}
+
+	float r = ofRandom(0, 1); //calculate a probability
+	if (r < threshold) { //and if less than that dimension's threshold
+	//For every dimension:
+		for (int i = 0; i < values.size(); i++) {
 			float offset = pow(ofRandom(0, 1), exponents[i]) * amounts[i]; //Exponent shapes the distribution curve, amount scales 
 			if (ofRandom(0, 1) < 0.5) //50% chance it's negative
 				offset *= -1;
@@ -115,5 +134,5 @@ void Agent::draw(bool isBest) {
 		ofSetColor(standardC);
 	//ofSetColor(standardC);
 	ofFill();
-	ofDrawCircle(values[0]*ofGetWidth(), values[1]*ofGetHeight(), r);
+	ofDrawCircle(values[0] * ofGetWidth(), values[1] * ofGetHeight(), r);
 }

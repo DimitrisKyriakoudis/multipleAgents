@@ -3,7 +3,7 @@
 
 #include "vector"
 #include "ofMain.h"
-//#include "ofxDatGui.h"
+#include "ofxDatGui.h"
 //#include "ofxGui.h"
 
 //#include "Agent.h"
