@@ -1,12 +1,16 @@
 #include "ofApp.h"
 
 int numDimensions = 2;
+
+bool isRunning = true;
 //--------------------------------------------------------------
 void ofApp::setup() {
 	//GUI = new ofxDatGui(ofxDatGuiAnchor::TOP_LEFT);
 	//ofBackground(100, 50, 50);
 
 	numAgents = 20;
+
+	ofSetFrameRate(10);
 
 	//swarm = Swarm();
 	/*int numAgents = 10;
@@ -26,20 +30,24 @@ void ofApp::setup() {
 	//swarm.draw();
 	/*ofSetColor()
 	ofDrawCircle(100, 100, 10);*/
-	std::cout << "Max float: " << FLT_MAX << std::endl;
+	//std::cout << "Max float: " << FLT_MAX << std::endl;
 
 
 }
 
 //--------------------------------------------------------------
 void ofApp::update() {
-
+	swarm.setGoals((float)ofGetMouseX() / ofGetWidth(), (float)ofGetMouseY() / ofGetHeight());
+	if (isRunning)
+		swarm.update();
 }
 
 //--------------------------------------------------------------
 void ofApp::draw() {
-	ofBackground(100, 50, 50);
-	swarm.draw();
+	if (isRunning) {
+		ofBackground(100, 50, 50);
+		swarm.draw();
+	}
 }
 
 //--------------------------------------------------------------
@@ -61,6 +69,10 @@ void ofApp::keyPressed(int key) {
 		numDimensions--;
 		swarm.resizeDimensions(numDimensions);
 	}
+
+	if (key == ' ')
+		isRunning = !isRunning;
+	
 }
 
 //--------------------------------------------------------------
@@ -80,7 +92,8 @@ void ofApp::mouseDragged(int x, int y, int button) {
 
 //--------------------------------------------------------------
 void ofApp::mousePressed(int x, int y, int button) {
-
+	//swarm.setGoals(ofGetMouseX() / ofGetWidth(), ofGetMouseY() / ofGetHeight());
+	//std::cout << (float)ofGetMouseX() / ofGetWidth() << " " << (float)ofGetMouseY() / ofGetHeight() << std::endl;
 }
 
 //--------------------------------------------------------------

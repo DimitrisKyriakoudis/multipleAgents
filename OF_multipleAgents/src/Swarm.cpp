@@ -7,19 +7,25 @@ Swarm::Swarm() {
 	numDimensions = 2;
 
 	boolElitist = true;
+	boolDisturbBeforeUpdate = true;
 
 	initDt = 0.05;
-	initDamt = 0.1;
-	initDexp = 1;
-	initUpdateAmt = 1;
+	initDamt = 0.8;
+	initDexp = 1.0;
+	initUpdateAmt = 1.0;
+	initUpdateExp = 1.0;
 	initValue = 0.0;
+	initGoals = 0.5;
+
+	/*goals.push_back*/
 
 	for (int i = 0; i < numDimensions; i++) {
 		dThreshs.push_back(initDt);
 		dAmts.push_back(initDamt);
 		dExps.push_back(initDexp);
 		updateAmts.push_back(initUpdateAmt);
-		goals.push_back(initValue);
+		updateExps.push_back(initUpdateExp);
+		goals.push_back(initGoals);
 		//tempValues.push_back(initValue);
 	}
 
@@ -29,7 +35,7 @@ Swarm::Swarm() {
 	for (int i = 0; i < numAgents; i++) {
 		std::vector<float> tempValues;
 		for (int i = 0; i < numDimensions; i++) {
-			tempValues.push_back(ofRandomHeight());
+			tempValues.push_back(ofRandom(0, 1));
 		}
 
 		Agent a = Agent(tempValues);
@@ -38,12 +44,12 @@ Swarm::Swarm() {
 
 	//Initialise GUI
 	//---------------------------------------
-	gui.setup("Parameters");
-	for (int i = 0; i < numDimensions; i++) {
-		ofParameter<float> temp;
-		dts.push_back(temp);
-		gui.add(dts[i].set("test", 0.5, 0, 1));
-	}
+	//gui.setup("Parameters");
+	//for (int i = 0; i < numDimensions; i++) {
+	//	ofParameter<float> temp;
+	//	dts.push_back(temp);
+	//	gui.add(dts[i].set("test", 0.5, 0, 1));
+	//}
 
 	//TODO: Initialise OSC (?)
 	//---------------------------------------
@@ -55,16 +61,48 @@ Swarm::Swarm() {
 
 //--------------------------------------------------------------
 void Swarm::update() {
-	updateFitnesses(goals);
-	updateAgents(boolElitist, updateAmts);
+	//updateParameters();
+	updateSwarm();
+
 	draw();
 }
 
+void Swarm::setGoals(float x, float y) {
+	goals[0] = x;
+	goals[1] = y;
+}
+
+void Swarm::updateSwarm() {
+
+	if (boolDisturbBeforeUpdate) {
+		disturbAgents(dThreshs, dExps, dAmts);
+		updateFitnesses(goals);
+		updateAgents(boolElitist, updateAmts, updateExps);
+	}
+	else {
+		updateFitnesses(goals);
+		updateAgents(boolElitist, updateAmts, updateExps);
+		disturbAgents(dThreshs, dExps, dAmts);
+	}
+}
+
 //--------------------------------------------------------------
-void Swarm::updateAgents(bool elitist, const std::vector<float>& updateAmt) {
+void Swarm::updateAgents(bool elitist, const std::vector<float>& updateAmt, const std::vector<float>& updateExp) {
 	for (int i = 0; i < agents.size(); i++) {
 		int bestNeighborIndx = findBestNeighbor(i);
-		agents[i].update(agents[bestNeighborIndx], agents[bestAgentIndx], updateAmt, elitist);
+		agents[i].update(agents[bestNeighborIndx], agents[bestAgentIndx], updateAmt, updateExp, elitist);
+	}
+}
+
+void Swarm::disturbAgents(const std::vector<float>& thresholds, const std::vector<float>& exponents, const std::vector<float>& amounts) {
+	if (thresholds.size() != numDimensions || exponents.size() != numDimensions || amounts.size() != numDimensions) {
+		std::cout << "Swarm::disturbAgents -> vector sizes don't match" << std::endl;
+		return;
+	}
+	else {
+		for (int i = 0; i < agents.size(); i++) {
+			agents[i].disturb(thresholds, exponents, amounts);
+		}
 	}
 }
 
@@ -173,6 +211,9 @@ void Swarm::resizeDimensions(int newNum) {
 			for (int k = 0; k < diff; k++) agents[i].addDimension(initValue);
 		}
 
+		//Add as many dimension parameters to match
+		for (int k = 0; k < diff; k++) addDimParams();
+
 		//add more parameters
 	/*	for (int k = 0; k < diff; k++) {
 			ofParameter<float> temp;
@@ -193,7 +234,27 @@ void Swarm::resizeDimensions(int newNum) {
 					agents[i].removeDimension();
 				}
 			}
+			//Remove dimension parameters to match
+			for (int k = 0; k < abs(diff); k++) removeDimParams();
+
 			numDimensions += diff; //update global number of dimensions
 		}
+		else std::cout << "Swarm::resizeDims -> can't remove dimensions" << std::endl;
 	}
+}
+
+void Swarm::addDimParams() {
+	dThreshs.push_back(initDt);
+	dAmts.push_back(initDamt);
+	dExps.push_back(initDexp);
+	updateAmts.push_back(initUpdateAmt);
+	goals.push_back(initValue);
+}
+
+void Swarm::removeDimParams() {
+	dThreshs.pop_back();
+	dAmts.pop_back();
+	dExps.pop_back();
+	updateAmts.pop_back();
+	goals.pop_back();
 }
