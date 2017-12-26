@@ -15,9 +15,15 @@ public:
 	void draw();
 	void update();
 	void setGoals(float, float);
+	void setDisturbSeparately(bool);
+
+	//Overloaded disturbance functions that use either a single or an individual threshold for every dimension
 	void disturbAgents(const std::vector<float>&, const std::vector<float>&, const std::vector<float>&);
+	void disturbAgents(float, const std::vector<float>&, const std::vector<float>&);
+
 	void reset();
 	void resetAllTo(float);
+	void resetDimensionTo(float);
 	void resizeSwarm(int);
 	void resizeDimensions(int);
 	void setElitist(bool);
@@ -36,9 +42,10 @@ private:
 	void removeDimParams();
 
 	std::vector<Agent> agents;
-	std::vector<float> dThreshs;
-	std::vector<float> dAmts;
-	std::vector<float> dExps;
+	float			   singleThresh; //Single threshold for all dimensions
+	std::vector<float> distThreshs; //individual thresholds for each dimension
+	std::vector<float> distAmts;
+	std::vector<float> distExps;
 	std::vector<float> updateAmts;
 	std::vector<float> updateExps;
 
@@ -50,6 +57,7 @@ private:
 	int bestAgentIndx;
 	bool boolElitist;
 	bool boolDisturbBeforeUpdate;
+	bool boolDisturbSeparately;
 
 	float initValue;
 	float initDt;
