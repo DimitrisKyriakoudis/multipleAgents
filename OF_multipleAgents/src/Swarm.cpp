@@ -19,6 +19,37 @@ Swarm::Swarm() {
 	initGoals = 0.5;
 	singleThresh = initDt;
 
+	//Names for the different panels
+	std::vector<string> panelNames = {
+		"Disturbance Thresholds",
+		"Disturbance Amounts" ,
+		"Disturbance Amount Exponents",
+		"Update Amounts",
+		"Update Amount Exponents"
+	};
+
+	/*dThreshsPanel = ofxDatGui(ofxDatGuiAnchor::TOP_LEFT);
+	dAmtsPanel = ofxDatGui(ofxDatGuiAnchor::TOP_LEFT);
+	dExpsPanel = ofxDatGui(ofxDatGuiAnchor::TOP_LEFT);
+	uAmtsPanel = ofxDatGui(ofxDatGuiAnchor::TOP_LEFT);
+	uExpsPanel = ofxDatGui(ofxDatGuiAnchor::TOP_LEFT);
+
+	dThreshsPanel.addHeader("Disturbance Thresholds");
+	dAmtsPanel.addHeader("Disturbance Amounts");
+	dExpsPanel.addHeader("Disturbance Amount Exponents");
+	uAmtsPanel.addHeader("Update Amounts");
+	uExpsPanel.addHeader("Update Amount Exponents");*/
+
+	
+
+	//Initialise panels and add the appropriate header
+	for (int i = 0; i < panelNames.size(); i++) {
+		panels.push_back(new ofxDatGui());
+		panels[i]->addHeader(panelNames[i]);
+	}
+
+	//Resize vector to hold the vectors of sliders for each parameter
+	guiParameterSliders.resize(panelNames.size());
 	for (int i = 0; i < numDimensions; i++) {
 		distThreshs.push_back(initDt);
 		distAmts.push_back(initDamt);
@@ -27,6 +58,41 @@ Swarm::Swarm() {
 		updateExps.push_back(initUpdateExp);
 		goals.push_back(initGoals);
 		//tempValues.push_back(initValue);
+
+		//Name for each slider
+		stringstream s;
+		s << "Dimension " << i + 1;
+
+		//Initialise a slider for each dimension and bind it to the corresponding
+		//dimension value of the corresponding parameter
+
+		//Disturbance Thresholds
+		guiParameterSliders[0].push_back(panels[0]->addSlider(s.str(), 0, 1));
+		guiParameterSliders[0][i]->bind(distThreshs[i]);
+		//Disturbance Amounts
+		guiParameterSliders[1].push_back(panels[1]->addSlider(s.str(), 0, 1));
+		guiParameterSliders[1][i]->bind(distAmts[i]);
+		//Disturbance Exponents
+		guiParameterSliders[2].push_back(panels[2]->addSlider(s.str(), 0, 1));
+		guiParameterSliders[2][i]->bind(distExps[i]);
+		//Update Amounts
+		guiParameterSliders[3].push_back(panels[3]->addSlider(s.str(), 0, 1));
+		guiParameterSliders[3][i]->bind(updateAmts[i]);
+		//Update Exponents
+		guiParameterSliders[4].push_back(panels[4]->addSlider(s.str(), 0, 1));
+		guiParameterSliders[4][i]->bind(updateExps[i]);
+	}
+
+	initPanelX = 10;
+	initPanelY = 10;
+	//Stack each panel vertically
+	for (int i = 0; i < panels.size(); i++) {
+		if (i == 0)
+			panels[i]->setPosition(initPanelX, initPanelY);
+		else {
+			int newY = panels[i - 1]->getPosition().y + panels[i - 1]->getHeight();
+			panels[i]->setPosition(initPanelX, newY);
+		}
 	}
 
 	//Initialise agents with defaults
@@ -42,58 +108,22 @@ Swarm::Swarm() {
 		agents.push_back(a);
 	}
 
-	//Initialise GUI
-	//---------------------------------------
-	//gui.setup("Parameters");
-	//for (int i = 0; i < numDimensions; i++) {
-	//	ofParameter<float> temp;
-	//	dts.push_back(temp);
-	//	gui.add(dts[i].set("test", 0.5, 0, 1));
-	//}
-
 	//TODO: Initialise OSC (?)
 	//---------------------------------------
+}
 
+//void Swarm::bindGuiPanel(ofxDatGui *pGUI, const std::vector<float>& parameter) {
+//
+//}
 
-	dThreshsPanel = ofxDatGui(ofxDatGuiAnchor::TOP_LEFT);
-	dAmtsPanel = ofxDatGui(ofxDatGuiAnchor::TOP_LEFT);
-	dExpsPanel = ofxDatGui(ofxDatGuiAnchor::TOP_LEFT);
-	uAmtsPanel = ofxDatGui(ofxDatGuiAnchor::TOP_LEFT);
-	uExpsPanel = ofxDatGui(ofxDatGuiAnchor::TOP_LEFT);
-
-	dThreshsPanel.addHeader("Disturbance Thresholds");
-	dAmtsPanel.addHeader("Disturbance Amounts");
-	dExpsPanel.addHeader("Disturbance Amount Exponents");
-	uAmtsPanel.addHeader("Update Amounts");
-	uExpsPanel.addHeader("Update Amount Exponents");
-
-
-	for (int i = 0; i < numDimensions; i++) {
-		stringstream s;
-		s << "Dimension " << i + 1;
-
-		//Disturbance Thresholds
-		guiDTs.push_back(dThreshsPanel.addSlider(s.str(), 0, 1));
-		guiDTs[i]->bind(distThreshs[i]);
-		//Disturbance Amounts
-		guiDAmts.push_back(dAmtsPanel.addSlider(s.str(), 0, 1));
-		guiDAmts[i]->bind(distAmts[i]);
-		//Disturbance Exponents
-		guiDExps.push_back(dExpsPanel.addSlider(s.str(), 0, 1));
-		guiDExps[i]->bind(distExps[i]);
-		//Update Amounts
-		guiUAmts.push_back(uAmtsPanel.addSlider(s.str(), 0, 1));
-		guiUAmts[i]->bind(updateAmts[i]);
-		//Update Exponents
-		guiUExps.push_back(uExpsPanel.addSlider(s.str(), 0, 1));
-		guiUExps[i]->bind(updateExps[i]);
-	}
+//--------------------------------------------------------------
+void Swarm::addGuiDimension(int num) {
 
 }
 
 //--------------------------------------------------------------
 void Swarm::update() {
-	//updateParameters();
+	//oscUpdateParameters();
 	updateSwarm();
 
 	draw();

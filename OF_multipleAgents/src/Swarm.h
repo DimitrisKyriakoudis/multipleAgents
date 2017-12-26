@@ -74,19 +74,26 @@ private:
 	float initUpdateExp;
 	float initGoals;
 
+	void addGuiDimension(int);
+
 	//ofxPanel gui;
 	ofxDatGui dThreshsPanel;
 	ofxDatGui dAmtsPanel;
 	ofxDatGui dExpsPanel;
 	ofxDatGui uAmtsPanel;
 	ofxDatGui uExpsPanel;
+	std::vector<ofxDatGui*> panels;
+	int initPanelX;
+	int initPanelY;
+	//std::vector<std::vector<float> > swarmParameters;
 
-	std::vector<ofxDatGuiSlider*> guiDTs;
+	std::vector<std::vector<ofxDatGuiSlider*> > guiParameterSliders;
+/*
 	std::vector<ofxDatGuiSlider*> guiDAmts;
 	std::vector<ofxDatGuiSlider*> guiDExps;
 	std::vector<ofxDatGuiSlider*> guiUAmts;
 	std::vector<ofxDatGuiSlider*> guiUExps;
-
+*/
 
 };
 
