@@ -3,8 +3,8 @@
 //--------------------------------------------------------------
 Agent::Agent(const vector<float>& vals) {
 	fitness = 0;
-	standardC = ofColor(200, 0, 0, 150);
-	bestC = ofColor(100, 200, 255, 255);
+	standardC = ofColor(200, 0, 0, 100);
+	bestC = ofColor(100, 200, 255, 100);
 	drawSize = 10;
 	values = vals;
 }

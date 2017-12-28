@@ -22,6 +22,8 @@ public:
 	void setDisturbSeparately(bool);
 	void setNumAgents(int);
 	void setNumDimensions(int);
+	//seconds until next update
+	void setUpdateFrequency(double);
 
 	//Overloaded disturbance functions that use either a single or an individual threshold for every dimension
 	void disturbAgents(const std::vector<float>&, const std::vector<float>&, const std::vector<float>&);
@@ -29,7 +31,6 @@ public:
 
 	void reset();
 	void resetAllTo(float);
-	void resetDimensionTo(float);
 	void resizeSwarm(int);
 	void resizeDimensions(int);
 	void setElitist(bool);
@@ -54,7 +55,6 @@ private:
 	void positionGuiPanels();
 	void checkForNumChanges();
 
-	void onSliderEvent(ofxDatGuiSliderEvent);
 	double time, timer, updateEvery;
 
 	std::vector<Agent> agents;
@@ -70,6 +70,7 @@ private:
 
 	///////////////////
 	std::vector<ofParameter<float> > dts;
+	void onToggleEvent(ofxDatGuiToggleEvent);
 
 	int bestAgentIndx;
 	bool boolElitist;
@@ -84,8 +85,6 @@ private:
 	float initUpdateExp;
 	float initGoals;
 
-	void addGuiDimension(int);
-	void removeGuiDimension();
 
 	//ofxPanel gui;
 	ofxDatGui* controlTogglesPanel;
@@ -95,12 +94,7 @@ private:
 	//std::vector<std::vector<float> > swarmParameters;
 	void initGuiPanels(int);
 	std::vector<std::vector<ofxDatGuiSlider*> > guiPanelSliders;
-/*
-	std::vector<ofxDatGuiSlider*> guiDAmts;
-	std::vector<ofxDatGuiSlider*> guiDExps;
-	std::vector<ofxDatGuiSlider*> guiUAmts;
-	std::vector<ofxDatGuiSlider*> guiUExps;
-*/
+
 	ofxXmlSettings settings;
 };
 

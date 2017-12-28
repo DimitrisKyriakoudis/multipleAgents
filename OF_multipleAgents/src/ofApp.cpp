@@ -62,7 +62,8 @@ void ofApp::keyPressed(int key) {
 		swarm.setNumDimensions(3);
 	}
 
-	
+	if(key == 'f')
+		ofToggleFullscreen();
 
 	if (key == ' ')
 		isRunning = !isRunning;
