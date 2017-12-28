@@ -5,10 +5,13 @@ Swarm::Swarm() {
 	//---------------------------------------
 	numAgents = 10;
 	numDimensions = 2;
+	//Used to update swarm sizes when sliders change
+	currNumAgents = numAgents;
+	currNumDimensions = numDimensions;
 
 	boolElitist = true;
-	boolDisturbBeforeUpdate = false;
-	boolDisturbSeparately = false;
+	boolDisturbBeforeUpdate = true;
+	boolDisturbSeparately = true;
 
 	initDt = 0.05;
 	initDamt = 0.8;
@@ -19,81 +22,32 @@ Swarm::Swarm() {
 	initGoals = 0.5;
 	singleThresh = initDt;
 
-	//Names for the different panels
-	std::vector<string> panelNames = {
-		"Disturbance Thresholds",
-		"Disturbance Amounts" ,
-		"Disturbance Amount Exponents",
-		"Update Amounts",
-		"Update Amount Exponents"
-	};
-
-	/*dThreshsPanel = ofxDatGui(ofxDatGuiAnchor::TOP_LEFT);
-	dAmtsPanel = ofxDatGui(ofxDatGuiAnchor::TOP_LEFT);
-	dExpsPanel = ofxDatGui(ofxDatGuiAnchor::TOP_LEFT);
-	uAmtsPanel = ofxDatGui(ofxDatGuiAnchor::TOP_LEFT);
-	uExpsPanel = ofxDatGui(ofxDatGuiAnchor::TOP_LEFT);
-
-	dThreshsPanel.addHeader("Disturbance Thresholds");
-	dAmtsPanel.addHeader("Disturbance Amounts");
-	dExpsPanel.addHeader("Disturbance Amount Exponents");
-	uAmtsPanel.addHeader("Update Amounts");
-	uExpsPanel.addHeader("Update Amount Exponents");*/
+	//Initialise general toggle panel
+	initPanelX = 10;
+	initPanelY = 10;
+	controlTogglesPanel = new ofxDatGui(initPanelX, initPanelY);
+	controlTogglesPanel->addHeader("Behavior Toggles");
+	controlTogglesPanel->addSlider("Number of Agents", 2, 100)->bind(numAgents);
+	controlTogglesPanel->addSlider("Number of Dimensions", 1, 20)->bind(numDimensions);
+	controlTogglesPanel->addToggle("Elitist Approach", boolElitist);
+	controlTogglesPanel->addToggle("Disturb Before Update", boolDisturbBeforeUpdate);
+	controlTogglesPanel->addToggle("Separate Disturbance Thresholds", boolDisturbSeparately);
+	std::cout << "first panel done" << std::endl;
 
 	
 
-	//Initialise panels and add the appropriate header
-	for (int i = 0; i < panelNames.size(); i++) {
-		panels.push_back(new ofxDatGui());
-		panels[i]->addHeader(panelNames[i]);
-	}
-
-	//Resize vector to hold the vectors of sliders for each parameter
-	guiParameterSliders.resize(panelNames.size());
+	//Resize vector to hold the vectors of sliders for each panel/parameter
 	for (int i = 0; i < numDimensions; i++) {
-		distThreshs.push_back(initDt);
-		distAmts.push_back(initDamt);
-		distExps.push_back(initDexp);
-		updateAmts.push_back(initUpdateAmt);
-		updateExps.push_back(initUpdateExp);
-		goals.push_back(initGoals);
-		//tempValues.push_back(initValue);
-
-		//Name for each slider
-		stringstream s;
-		s << "Dimension " << i + 1;
-
-		//Initialise a slider for each dimension and bind it to the corresponding
-		//dimension value of the corresponding parameter
-
-		//Disturbance Thresholds
-		guiParameterSliders[0].push_back(panels[0]->addSlider(s.str(), 0, 1));
-		guiParameterSliders[0][i]->bind(distThreshs[i]);
-		//Disturbance Amounts
-		guiParameterSliders[1].push_back(panels[1]->addSlider(s.str(), 0, 1));
-		guiParameterSliders[1][i]->bind(distAmts[i]);
-		//Disturbance Exponents
-		guiParameterSliders[2].push_back(panels[2]->addSlider(s.str(), 0, 1));
-		guiParameterSliders[2][i]->bind(distExps[i]);
-		//Update Amounts
-		guiParameterSliders[3].push_back(panels[3]->addSlider(s.str(), 0, 1));
-		guiParameterSliders[3][i]->bind(updateAmts[i]);
-		//Update Exponents
-		guiParameterSliders[4].push_back(panels[4]->addSlider(s.str(), 0, 1));
-		guiParameterSliders[4][i]->bind(updateExps[i]);
+		addParamDimension();
 	}
 
-	initPanelX = 10;
-	initPanelY = 10;
-	//Stack each panel vertically
-	for (int i = 0; i < panels.size(); i++) {
-		if (i == 0)
-			panels[i]->setPosition(initPanelX, initPanelY);
-		else {
-			int newY = panels[i - 1]->getPosition().y + panels[i - 1]->getHeight();
-			panels[i]->setPosition(initPanelX, newY);
-		}
-	}
+	std::cout << "dimensions done" << std::endl;
+
+
+	initGuiPanels(numDimensions);
+	std::cout << "init gui panels done" << std::endl;
+
+	
 
 	//Initialise agents with defaults
 	//TODO: initialise at starting value instead of random
@@ -112,23 +66,114 @@ Swarm::Swarm() {
 	//---------------------------------------
 }
 
+
+void Swarm::initGuiPanels(int num) {
+	if (distThreshs.size() != num) {
+		std::cout << "initGuiPanels: sizes don't match" << std::endl;
+		return;
+	}
+
+	std::vector<string> panelNames = {
+		"Disturbance Thresholds",
+		"Disturbance Amounts" ,
+		"Disturbance Amount Exponents",
+		"Update Amounts",
+		"Update Amount Exponents",
+		"Goals"
+	};
+
+	std::cout << "panelNames done" << std::endl;
+
+
+	for (int i = 0; i < panelNames.size(); i++) {
+		panels.push_back(new ofxDatGui());
+		panels[i]->addHeader(panelNames[i]);
+	}
+	
+	//panels[0]->addSlider(s.str(), 0, 1);
+
+	std::cout << "panels size: " << panels.size() << std::endl;
+
+	for (int i = 0; i < num; i++) {
+		stringstream s;
+		s << "Dimension " << i + 1;
+
+		//Disturbance Thresholds
+		panels[0]->addSlider(s.str(), 0, 1);
+		panels[0]->getSlider(s.str())->bind(distThreshs[i]);
+		//Disturbance Amounts
+		panels[1]->addSlider(s.str(), 0, 1);
+		panels[1]->getSlider(s.str())->bind(distAmts[i]);
+		//Disturbance Exponents
+		panels[2]->addSlider(s.str(), 0, 1);
+		panels[2]->getSlider(s.str())->bind(distExps[i]);
+		//Update Amounts
+		panels[3]->addSlider(s.str(), 0, 1);
+		panels[3]->getSlider(s.str())->bind(updateAmts[i]);
+		//Update amount Exponents
+		panels[4]->addSlider(s.str(), 0, 1);
+		panels[4]->getSlider(s.str())->bind(updateExps[i]);
+		//Goals
+		panels[5]->addSlider(s.str(), 0, 1);
+		panels[5]->getSlider(s.str())->bind(goals[i]);
+	}
+
+	std::cout << "panel sliders done" << std::endl;
+
+
+	positionGuiPanels();
+	std::cout << "positioning done" << std::endl;
+
+}
+
+void Swarm::deleteGuiPanels() {
+	for (int i = 0; i < panels.size(); i++) {
+		panels[i]->~ofxDatGui();
+		delete panels[i];
+	}
+
+	panels.clear();
+}
 //void Swarm::bindGuiPanel(ofxDatGui *pGUI, const std::vector<float>& parameter) {
 //
 //}
 
-//--------------------------------------------------------------
-void Swarm::addGuiDimension(int num) {
+void Swarm::checkForNumChanges() {
+	if (currNumAgents != numAgents) {
+		setNumAgents(numAgents);
+	}
+	if (currNumDimensions != numDimensions) {
+		setNumDimensions(numDimensions);
+	}
+}
 
+//--------------------------------------------------------------
+void Swarm::setNumAgents(int num) {
+	resizeSwarm(num);
+	numAgents = num;
+}
+
+//--------------------------------------------------------------
+void Swarm::setNumDimensions(int num) {
+	deleteGuiPanels();
+	resizeDimensions(num);
+	initGuiPanels(num);
+
+	numDimensions = num;
+	currNumDimensions = num;
+	std::cout << "Dimensions resized!" << std::endl;
 }
 
 //--------------------------------------------------------------
 void Swarm::update() {
 	//oscUpdateParameters();
+	checkForNumChanges();
 	updateSwarm();
-
 	draw();
 }
 
+//--------------------------------------------------------------
+//TODO: set all goals
 void Swarm::setGoals(float x, float y) {
 	goals[0] = x;
 	goals[1] = y;
@@ -266,10 +311,11 @@ void Swarm::resizeSwarm(int newSize) {
 	int diff = newSize - currentSize;
 	//If we should increase
 	if (diff > 0) {
-		for (int i = 0; i < diff; i++) {
+		//Keep adding agents until size is as desired
+		while(agents.size() != newSize){
 			std::vector<float> temp;
 			for (int j = 0; j < numDimensions; j++) {
-				temp.push_back(ofRandomHeight());
+				temp.push_back(ofRandom(0, 1));
 			}
 			Agent a = Agent(temp);
 			agents.push_back(a);
@@ -277,8 +323,10 @@ void Swarm::resizeSwarm(int newSize) {
 	}
 	//Else we should decrease (only if there is more than one agent in the swarm)
 	else if (diff < 0) {
-		if (currentSize > 1) {
-			for (int i = 0; i < abs(diff); i++)	agents.pop_back();
+		if (currentSize >= 2) {
+			//Keep removing agents until size is as desired
+			while (agents.size() != newSize)
+				agents.pop_back();
 		}
 		else std::cout << "Not enough agents to remove" << std::endl;
 	}
@@ -290,49 +338,51 @@ void Swarm::resizeDimensions(int newNum) {
 
 	//If we should increase:
 	if (diff > 0) {
-		//for every agent..
+		//Add dimensions to all agents
 		for (int i = 0; i < agents.size(); i++) {
-			//add as many dimensions as needed
 			for (int k = 0; k < diff; k++) agents[i].addDimension(initValue);
 		}
 
-		//Add as many dimension parameters to match
-		for (int k = 0; k < diff; k++) addDimParams();
-
-		//add more GUI parameters
-	/*	for (int k = 0; k < diff; k++) {
-			ofParameter<float> temp;
-			dts.push_back(temp);
-			gui.add(dts[dts.size()-1].set("test", 0.5, 0, 1));
-		}*/
-
-		numDimensions += diff; //update global number of dimensions
+		//Add gui sliders and elements to the parameter vectors to match
+		for (int k = 0; k < diff; k++) {
+			addParamDimension();
+		}
 	}
-
 	//If we should decrease:
 	else if (diff < 0) {
-		//for every agent..
+		//Remove dimensions from all agents (only if there are at least 2 left)
 		if (numDimensions + diff >= 2) {
 			for (int i = 0; i < agents.size(); i++) {
-				//remove as many dimensions as needed (only if there is at least 2 left)
-				for (int k = 0; k < abs(diff); k++) {
-					agents[i].removeDimension();
-				}
+				for (int k = 0; k < abs(diff); k++) agents[i].removeDimension();
 			}
 			//Remove dimension parameters to match
-			for (int k = 0; k < abs(diff); k++) removeDimParams();
-
-			numDimensions += diff; //update global number of dimensions
+			for (int k = 0; k < abs(diff); k++) {
+				removeDimParams();
+			}
 		}
 		else std::cout << "Swarm::resizeDims -> can't remove dimensions" << std::endl;
 	}
 }
 
-void Swarm::addDimParams() {
+//--------------------------------------------------------------
+void Swarm::positionGuiPanels() {
+	for (int i = 0; i < panels.size(); i++) {
+		if (i == 0) {
+			panels[i]->setPosition(controlTogglesPanel->getPosition().x, controlTogglesPanel->getPosition().y + controlTogglesPanel->getHeight());
+		}
+		else {
+			int newY = panels[i - 1]->getPosition().y + panels[i - 1]->getHeight();
+			panels[i]->setPosition(initPanelX, newY);
+		}
+	}
+}
+
+void Swarm::addParamDimension() {
 	distThreshs.push_back(initDt);
 	distAmts.push_back(initDamt);
 	distExps.push_back(initDexp);
 	updateAmts.push_back(initUpdateAmt);
+	updateExps.push_back(initUpdateExp);
 	goals.push_back(initValue);
 }
 
@@ -341,5 +391,6 @@ void Swarm::removeDimParams() {
 	distAmts.pop_back();
 	distExps.pop_back();
 	updateAmts.pop_back();
+	updateExps.pop_back();
 	goals.pop_back();
 }

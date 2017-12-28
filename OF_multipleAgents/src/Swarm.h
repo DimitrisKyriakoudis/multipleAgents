@@ -7,19 +7,21 @@
 
 #include "ofMain.h"
 #include "Agent.h"
-#include "ofxGui.h"
+//#include "ofxGui.h"
 #include "ofxDatGui.h"
+#include "ofxXmlSettings.h"
 
 class Swarm{
 public:
 	Swarm();
 
 	int size();
-
 	void draw();
 	void update();
 	void setGoals(float, float);
 	void setDisturbSeparately(bool);
+	void setNumAgents(int);
+	void setNumDimensions(int);
 
 	//Overloaded disturbance functions that use either a single or an individual threshold for every dimension
 	void disturbAgents(const std::vector<float>&, const std::vector<float>&, const std::vector<float>&);
@@ -35,16 +37,24 @@ public:
 	void setGoals(const std::vector<float>&);
 
 	int numAgents;
+	int currNumAgents;
 	int numDimensions;
+	int currNumDimensions;
+
+	void deleteGuiPanels();
+
 
 private:
 	void updateSwarm();
 	void updateFitnesses(const std::vector<float>&);
 	void updateAgents(bool, const std::vector<float>&, const std::vector<float>&);
 	int  findBestNeighbor(int);
-	void addDimParams();
+	void addParamDimension();
 	void removeDimParams();
+	void positionGuiPanels();
+	void checkForNumChanges();
 
+	void onSliderEvent(ofxDatGuiSliderEvent);
 	double time, timer, updateEvery;
 
 	std::vector<Agent> agents;
@@ -75,25 +85,22 @@ private:
 	float initGoals;
 
 	void addGuiDimension(int);
+	void removeGuiDimension();
 
 	//ofxPanel gui;
-	ofxDatGui dThreshsPanel;
-	ofxDatGui dAmtsPanel;
-	ofxDatGui dExpsPanel;
-	ofxDatGui uAmtsPanel;
-	ofxDatGui uExpsPanel;
+	ofxDatGui* controlTogglesPanel;
 	std::vector<ofxDatGui*> panels;
 	int initPanelX;
 	int initPanelY;
 	//std::vector<std::vector<float> > swarmParameters;
-
-	std::vector<std::vector<ofxDatGuiSlider*> > guiParameterSliders;
+	void initGuiPanels(int);
+	std::vector<std::vector<ofxDatGuiSlider*> > guiPanelSliders;
 /*
 	std::vector<ofxDatGuiSlider*> guiDAmts;
 	std::vector<ofxDatGuiSlider*> guiDExps;
 	std::vector<ofxDatGuiSlider*> guiUAmts;
 	std::vector<ofxDatGuiSlider*> guiUExps;
 */
-
+	ofxXmlSettings settings;
 };
 

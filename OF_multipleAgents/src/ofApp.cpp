@@ -54,23 +54,15 @@ void ofApp::draw() {
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key) {
-	if (key == 't') {
-		numAgents++;
-		swarm.resizeSwarm(numAgents);
+	if (key == 'a') {
+		swarm.setNumAgents(25);
 	}
-	if (key == 'h') {
-		numAgents--;
-		swarm.resizeSwarm(numAgents);
+	
+	if (key == 'o') {
+		swarm.setNumDimensions(3);
 	}
 
-	if (key == 'c') {
-		numDimensions++;
-		swarm.resizeDimensions(numDimensions);
-	}
-	if (key == 'g') {
-		numDimensions--;
-		swarm.resizeDimensions(numDimensions);
-	}
+	
 
 	if (key == ' ')
 		isRunning = !isRunning;
