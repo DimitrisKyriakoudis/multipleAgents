@@ -86,7 +86,7 @@ void Agent::disturb(const std::vector<float>& thresholds, const std::vector<floa
 		}
 	}
 }
-
+//-------------------overloaded-------------------
 void Agent::disturb(float threshold, const std::vector<float>& exponents, const std::vector<float>& amounts) {
 	//Make sure sizes match
 	if (amounts.size() != values.size() || exponents.size() != values.size()) {
