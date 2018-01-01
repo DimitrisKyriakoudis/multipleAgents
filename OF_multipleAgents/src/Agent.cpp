@@ -9,7 +9,7 @@ Agent::Agent(const vector<float>& vals) {
 	values = vals;
 }
 
-//void Agent::update(const Agent& bestNeighbor, const std::vector<float>& updateAmt) {
+//void Agent::update(const Agent& bestNeighbor, const vector<float>& updateAmt) {
 //	for (int i = 0; i < values.size(); i++) {
 //		float current = values[i];
 //		float neighbor = bestNeighbor.values[i];
@@ -21,7 +21,7 @@ Agent::Agent(const vector<float>& vals) {
 //}
 
 //--------------------------------------------------------------
-void Agent::update(const Agent& bestNeighbor, const Agent& bestInSwarm, const std::vector<float>& updateAmt, const std::vector<float>& updateExp, bool elitist) {
+void Agent::update(const Agent& bestNeighbor, const Agent& bestInSwarm, const vector<float>& updateAmt, const vector<float>& updateExp, bool elitist) {
 	for (int i = 0; i < values.size(); i++) {
 		float current = values[i];
 		float neighbor = bestNeighbor.values[i];
@@ -39,14 +39,14 @@ void Agent::update(const Agent& bestNeighbor, const Agent& bestInSwarm, const st
 }
 
 //--------------------------------------------------------------
-void Agent::updateFitness(const std::vector<float>& goals) {
+void Agent::updateFitness(const vector<float>& goals) {
 	if (goals.size() == values.size()) {
 		fitness = 0;
 		for (int i = 0; i < goals.size(); i++) {
 			fitness += abs(goals[i] - values[i]);
 		}
 	}
-	else std::cout << "Agent::updateFitness -> Goal and value sizes don't match!" << std::endl;
+	else cout << "Agent::updateFitness -> Goal and value sizes don't match!" << endl;
 }
 
 //--------------------------------------------------------------
@@ -63,15 +63,15 @@ float Agent::calcDistance(const Agent& otherAgent) {
 	return sqrt(dist);
 }
 
-//const std::vector<float>& Agent::getValues() {
+//const vector<float>& Agent::getValues() {
 //	return values;
 //}
 
 //--------------------------------------------------------------
-void Agent::disturb(const std::vector<float>& thresholds, const std::vector<float>& exponents, const std::vector<float>& amounts) {
+void Agent::disturb(const vector<float>& thresholds, const vector<float>& exponents, const vector<float>& amounts) {
 	//Make sure sizes match
 	if (thresholds.size() != values.size() || amounts.size() != values.size()) {
-		std::cout << "Agent::disturb -> vector sizes don't match" << std::endl;
+		cout << "Agent::disturb -> vector sizes don't match" << endl;
 		return;
 	}
 
@@ -87,10 +87,10 @@ void Agent::disturb(const std::vector<float>& thresholds, const std::vector<floa
 	}
 }
 //-------------------overloaded-------------------
-void Agent::disturb(float threshold, const std::vector<float>& exponents, const std::vector<float>& amounts) {
+void Agent::disturb(float threshold, const vector<float>& exponents, const vector<float>& amounts) {
 	//Make sure sizes match
 	if (amounts.size() != values.size() || exponents.size() != values.size()) {
-		std::cout << "Agent::disturb -> vector sizes don't match" << std::endl;
+		cout << "Agent::disturb -> vector sizes don't match" << endl;
 		return;
 	}
 
@@ -107,7 +107,7 @@ void Agent::disturb(float threshold, const std::vector<float>& exponents, const 
 }
 
 //--------------------------------------------------------------
-void Agent::setValues(const std::vector<float>& newValues) {
+void Agent::setValues(const vector<float>& newValues) {
 	values = newValues;
 }
 
@@ -120,7 +120,7 @@ void Agent::addDimension(float val) {
 void Agent::removeDimension() {
 	if (values.size() > 1)
 		values.pop_back();
-	else std::cout << "Can't remove dimension, only 1 left" << std::endl;
+	else cout << "Can't remove dimension, only 1 left" << endl;
 }
 
 //--------------------------------------------------------------

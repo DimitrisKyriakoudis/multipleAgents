@@ -11,6 +11,8 @@
 #include "ofxDatGui.h"
 #include "ofxXmlSettings.h"
 
+using namespace std;
+
 class Swarm{
 public:
 	Swarm();
@@ -23,11 +25,11 @@ public:
 	void setNumAgents(int);
 	void setNumDimensions(int);
 	//seconds until next update
-	void setUpdateFrequency(double);
+	void setUpdateEvery(double);
 
 	//Overloaded disturbance functions that use either a single or an individual threshold for every dimension
-	void disturbAgents(const std::vector<float>&, const std::vector<float>&, const std::vector<float>&);
-	void disturbAgents(float, const std::vector<float>&, const std::vector<float>&);
+	void disturbAgents(const vector<float>&, const vector<float>&, const vector<float>&);
+	void disturbAgents(float, const vector<float>&, const vector<float>&);
 
 	void reset();
 	void resetAllTo(float);
@@ -35,7 +37,7 @@ public:
 	void resizeDimensions(int);
 	void setElitist(bool);
 
-	void setGoals(const std::vector<float>&);
+	void setGoals(const vector<float>&);
 
 	int numAgents;
 	int currNumAgents;
@@ -47,29 +49,43 @@ public:
 
 private:
 	void updateSwarm();
-	void updateFitnesses(const std::vector<float>&);
-	void updateAgents(bool, const std::vector<float>&, const std::vector<float>&);
+	void updateFitnesses(const vector<float>&);
+	void updateAgents(bool, const vector<float>&, const vector<float>&);
 	int  findBestNeighbor(int);
 	void addParamDimension();
 	void removeDimParams();
 	void positionGuiPanels();
 	void checkForNumChanges();
 
-	double time, timer, updateEvery;
+	//draw phase -> where in the interpolation cycle we are (0 to 1)
+	//loopEvery -> how many frames does one update cycle loop over
+	//updatesPerLoop -> how many times we update at once
+	float drawPhase = 0;
+	int loopEvery = 15;
+	int updatesPerLoop = 5;
 
-	std::vector<Agent> agents;
 
-	float			   singleThresh; //Single threshold for all dimensions
-	std::vector<float> distThreshs; //individual thresholds for each dimension
-	std::vector<float> distAmts;
-	std::vector<float> distExps;
-	std::vector<float> updateAmts;
-	std::vector<float> updateExps;
 
-	std::vector<float> goals;
+	//double time, timer, updateEvery;
+
+	vector<Agent> agents;
+
+	float		  singleThresh; //Single threshold for all dimensions
+	vector<float> distThreshs; //individual thresholds for each dimension
+	vector<float> distAmts;
+	vector<float> distExps;
+	vector<float> updateAmts;
+	vector<float> updateExps;
+
+	vector<float> goals;
+
+
+	//Vectors for interpolation
+	vector<vector<float> > previousValues;
+	vector<vector<float> > nextValues;
 
 	///////////////////
-	std::vector<ofParameter<float> > dts;
+	vector<ofParameter<float> > dts;
 	void onToggleEvent(ofxDatGuiToggleEvent);
 
 	int bestAgentIndx;
@@ -88,12 +104,12 @@ private:
 
 	//ofxPanel gui;
 	ofxDatGui* controlTogglesPanel;
-	std::vector<ofxDatGui*> panels;
+	vector<ofxDatGui*> panels;
 	int initPanelX;
 	int initPanelY;
-	//std::vector<std::vector<float> > swarmParameters;
+	//vector<vector<float> > swarmParameters;
 	void initGuiPanels(int);
-	std::vector<std::vector<ofxDatGuiSlider*> > guiPanelSliders;
+	vector<vector<ofxDatGuiSlider*> > guiPanelSliders;
 
 	ofxXmlSettings settings;
 };

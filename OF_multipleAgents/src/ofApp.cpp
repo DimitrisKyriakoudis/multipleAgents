@@ -10,7 +10,7 @@ void ofApp::setup() {
 
 	numAgents = 20;
 
-	ofSetFrameRate(10);
+	ofSetFrameRate(60);
 
 	//swarm = Swarm();
 	/*int numAgents = 10;
@@ -37,6 +37,8 @@ void ofApp::setup() {
 
 //--------------------------------------------------------------
 void ofApp::update() {
+
+	std::cout << ofGetFrameRate() << std::endl;
 	swarm.setGoals((float)ofGetMouseX() / ofGetWidth(), (float)ofGetMouseY() / ofGetHeight());
 	
 	
@@ -47,7 +49,7 @@ void ofApp::update() {
 //--------------------------------------------------------------
 void ofApp::draw() {
 	if (isRunning) {
-		ofBackground(100, 50, 50);
+		ofBackground(51);
 		swarm.draw();
 	}
 }

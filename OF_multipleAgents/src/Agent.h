@@ -4,23 +4,25 @@
 #include "ofMain.h"
 #include "math.h"
 
+using namespace std;
+
 class Agent{
 public:
-	//Agent(const std::vector<float>& newValues);
+	//Agent(const vector<float>& newValues);
 	Agent(const vector<float>&);
 
 	void draw(bool);
-	//const std::vector<float>& getValues();
-	std::vector<float> values;
+	//const vector<float>& getValues();
+	vector<float> values;
 
-	void setValues(const std::vector<float>&);
-	void update(const Agent&, const Agent&, const std::vector<float>&, const std::vector<float>&, bool);
+	void setValues(const vector<float>&);
+	void update(const Agent&, const Agent&, const vector<float>&, const vector<float>&, bool);
 
 	float getFitness();
-	void updateFitness(const std::vector<float>&);
+	void updateFitness(const vector<float>&);
 
-	void disturb(const std::vector<float>&, const std::vector<float>&, const std::vector<float>&);
-	void disturb(float, const std::vector<float>&, const std::vector<float>&);
+	void disturb(const vector<float>&, const vector<float>&, const vector<float>&);
+	void disturb(float, const vector<float>&, const vector<float>&);
 
 	void removeDimension();
 	void addDimension(float);

@@ -3,8 +3,8 @@
 Swarm::Swarm() {
 	//Initialise parameters to default values
 	//---------------------------------------
-	numAgents = 10;
-	numDimensions = 2;
+	numAgents = 30;
+	numDimensions = 4;
 	//Used to update swarm sizes when sliders change
 	currNumAgents = numAgents;
 	currNumDimensions = numDimensions;
@@ -41,20 +41,31 @@ Swarm::Swarm() {
 		addParamDimension();
 	}
 
-	std::cout << "dimensions done" << std::endl;
+	cout << "dimensions done" << endl;
 
 
 	initGuiPanels(numDimensions);
-	std::cout << "init gui panels done" << std::endl;
+	cout << "init gui panels done" << endl;
 
 	//Initialise agents with defaults
 	//TODO: initialise at starting value instead of random
 	//---------------------------------------
 	for (int i = 0; i < numAgents; i++) {
-		std::vector<float> tempValues;
+		vector<float> tempValues;
+
+		
+		vector<float> tempPrevious = {};
+		vector<float> tempNext = {};
+
 		for (int i = 0; i < numDimensions; i++) {
-			tempValues.push_back(ofRandom(0, 1));
+			float t = ofRandom(0, 1);
+			tempValues.push_back(t);
+			tempPrevious.push_back(0);
+			tempNext.push_back(t);
 		}
+
+		previousValues.push_back(tempPrevious);
+		nextValues.push_back(tempNext);
 
 		Agent a = Agent(tempValues);
 		agents.push_back(a);
@@ -67,26 +78,26 @@ Swarm::Swarm() {
 void Swarm::onToggleEvent(ofxDatGuiToggleEvent e) {
 	if (e.target->is("Elitist Approach")) {
 		boolElitist = !boolElitist;
-		std::cout << "Elitist Approach: " << boolElitist << std::endl;
+		cout << "Elitist Approach: " << boolElitist << endl;
 	}
 	else if (e.target->is("Disturb Before Update")) {
 		boolDisturbBeforeUpdate = !boolDisturbBeforeUpdate;
-		std::cout << "Disturb Before Update: " << boolDisturbBeforeUpdate << std::endl;
+		cout << "Disturb Before Update: " << boolDisturbBeforeUpdate << endl;
 	}
 	else if (e.target->is("Separate Disturbance Thresholds")) {
 		boolDisturbSeparately = !boolDisturbSeparately;
-		std::cout << "Separate Disturbance Thresholds: " << boolDisturbSeparately << std::endl;
+		cout << "Separate Disturbance Thresholds: " << boolDisturbSeparately << endl;
 	}
 }
 
 //--------------------------------------------------------------
 void Swarm::initGuiPanels(int num) {
 	if (distThreshs.size() != num) {
-		std::cout << "initGuiPanels: sizes don't match" << std::endl;
+		cout << "initGuiPanels: sizes don't match" << endl;
 		return;
 	}
 
-	std::vector<string> panelNames = {
+	vector<string> panelNames = {
 		"Disturbance Thresholds",
 		"Disturbance Amounts" ,
 		"Disturbance Amount Exponents",
@@ -108,20 +119,20 @@ void Swarm::initGuiPanels(int num) {
 		panels[0]->addSlider(s.str(), 0, 1);
 		panels[0]->getSlider(s.str())->bind(distThreshs[i]);
 		//Disturbance Amounts
-		panels[1]->addSlider(s.str(), 0, 2);
-		panels[1]->getSlider(s.str())->bind(distAmts[i]);
-		//Disturbance Exponents
-		panels[2]->addSlider(s.str(), 0, 4);
-		panels[2]->getSlider(s.str())->bind(distExps[i]);
-		//Update Amounts
-		panels[3]->addSlider(s.str(), 0, 2);
-		panels[3]->getSlider(s.str())->bind(updateAmts[i]);
-		//Update amount Exponents
-		panels[4]->addSlider(s.str(), 0, 4);
-		panels[4]->getSlider(s.str())->bind(updateExps[i]);
-		//Goals
-		panels[5]->addSlider(s.str(), 0, 1);
-		panels[5]->getSlider(s.str())->bind(goals[i]);
+panels[1]->addSlider(s.str(), 0, 2);
+panels[1]->getSlider(s.str())->bind(distAmts[i]);
+//Disturbance Exponents
+panels[2]->addSlider(s.str(), 0, 4);
+panels[2]->getSlider(s.str())->bind(distExps[i]);
+//Update Amounts
+panels[3]->addSlider(s.str(), 0, 2);
+panels[3]->getSlider(s.str())->bind(updateAmts[i]);
+//Update amount Exponents
+panels[4]->addSlider(s.str(), 0, 4);
+panels[4]->getSlider(s.str())->bind(updateExps[i]);
+//Goals
+panels[5]->addSlider(s.str(), 0, 1);
+panels[5]->getSlider(s.str())->bind(goals[i]);
 	}
 
 	positionGuiPanels();
@@ -161,15 +172,29 @@ void Swarm::setNumDimensions(int num) {
 
 	numDimensions = num;
 	currNumDimensions = num;
-	std::cout << "Dimensions resized!" << std::endl;
+	cout << "Dimensions resized!" << endl;
 }
 
 //--------------------------------------------------------------
 void Swarm::update() {
 	//oscUpdateParameters();
 	checkForNumChanges();
-	updateSwarm();
-	draw();
+
+	drawPhase = (ofGetFrameNum() % loopEvery) / (float)loopEvery;
+	if (drawPhase == 0) {
+
+		for (int i = 0; i < updatesPerLoop; i++) {
+			updateSwarm();
+		}
+
+		//Passing on the old values
+		previousValues = nextValues;
+		for (int i = 0; i < numAgents; i++) {
+			for (int d = 0; d < numDimensions; d++) {
+				nextValues[i][d] = agents[i].values[d];
+			}
+		}
+	}
 }
 
 //--------------------------------------------------------------
@@ -199,10 +224,14 @@ void Swarm::updateSwarm() {
 			disturbAgents(distThreshs, distExps, distAmts);
 		else disturbAgents(singleThresh, distExps, distAmts);
 	}
+
+
+	///////////////
+	
 }
 
 //--------------------------------------------------------------
-void Swarm::updateAgents(bool elitist, const std::vector<float>& updateAmt, const std::vector<float>& updateExp) {
+void Swarm::updateAgents(bool elitist, const vector<float>& updateAmt, const vector<float>& updateExp) {
 	for (int i = 0; i < agents.size(); i++) {
 		if (i != bestAgentIndx) { //don't update best agent
 			int bestNeighborIndx = findBestNeighbor(i);
@@ -212,9 +241,9 @@ void Swarm::updateAgents(bool elitist, const std::vector<float>& updateAmt, cons
 }
 
 //--------------------------------------------------------------
-void Swarm::disturbAgents(const std::vector<float>& thresholds, const std::vector<float>& exponents, const std::vector<float>& amounts) {
+void Swarm::disturbAgents(const vector<float>& thresholds, const vector<float>& exponents, const vector<float>& amounts) {
 	if (thresholds.size() != numDimensions || exponents.size() != numDimensions || amounts.size() != numDimensions) {
-		std::cout << "Swarm::disturbAgents -> vector sizes don't match" << std::endl;
+		cout << "Swarm::disturbAgents -> vector sizes don't match" << endl;
 		return;
 	}
 	else {
@@ -225,9 +254,9 @@ void Swarm::disturbAgents(const std::vector<float>& thresholds, const std::vecto
 	}
 }
 //-------------------overloaded-------------------
-void Swarm::disturbAgents(float threshold, const std::vector<float>& exponents, const std::vector<float>& amounts) {
+void Swarm::disturbAgents(float threshold, const vector<float>& exponents, const vector<float>& amounts) {
 	if (exponents.size() != numDimensions || amounts.size() != numDimensions) {
-		std::cout << "Swarm::disturbAgents -> vector sizes don't match" << std::endl;
+		cout << "Swarm::disturbAgents -> vector sizes don't match" << endl;
 		return;
 	}
 	else {
@@ -276,11 +305,11 @@ int Swarm::findBestNeighbor(int currentAgent) {
 }
 
 //--------------------------------------------------------------
-void Swarm::setUpdateFrequency(double freq) {
-
-}
+//void Swarm::setUpdateFrequency(double freq) {
+//
+//}
 //--------------------------------------------------------------
-void Swarm::updateFitnesses(const std::vector<float>& goals) {
+void Swarm::updateFitnesses(const vector<float>& goals) {
 	float minScore = FLT_MAX;
 	//int indexOfBest = 0;
 
@@ -302,13 +331,37 @@ int Swarm::size() {
 
 //--------------------------------------------------------------
 void Swarm::draw() {
-	for (int i = 0; i < agents.size(); i++) {
-		if (i == bestAgentIndx)
-			continue;
-		else agents[i].draw(false);
+	int lineWidth = 550;
+	int initX = 350;
+	int padding = 100;
+	int height = ofGetHeight() - 2 * padding;
+
+	/* padding       (height-padding) */
+	
+	for (int d = 0; d < numDimensions; d++) {
+		float y = padding + height * ((float)d / numDimensions);
+
+		ofSetColor(255);
+		ofSetLineWidth(6);
+		//Draw SS lines
+		ofDrawLine(initX, y, initX + lineWidth, y);
+		//Draw target values for each dimension
+		ofDrawCircle(initX+goals[d] * lineWidth, y, 20);
+	
+		//Draw each agent's position in that dimension
+		ofSetColor(219, 20, 91, 160);
+		for (int i = 0; i < numAgents; i++) {
+			if (i != bestAgentIndx) {
+				float pos = ofLerp(previousValues[i][d], nextValues[i][d], drawPhase);
+				ofDrawCircle(initX + pos*lineWidth, y, 8);
+			}
+		}
+
+		//Draw best agent in that dimension
+		ofSetColor(120, 120, 255);
+		float pos = agents[bestAgentIndx].values[d];
+		ofDrawCircle(initX + pos*lineWidth, y, 8);
 	}
-	agents[bestAgentIndx].draw(true);
-	//gui.draw();
 }
 
 //--------------------------------------------------------------
@@ -319,7 +372,7 @@ void Swarm::resizeSwarm(int newSize) {
 	if (diff > 0) {
 		//Keep adding agents until size is as desired
 		while(agents.size() != newSize){
-			std::vector<float> temp;
+			vector<float> temp;
 			for (int j = 0; j < numDimensions; j++) {
 				temp.push_back(ofRandom(0, 1));
 			}
@@ -334,7 +387,7 @@ void Swarm::resizeSwarm(int newSize) {
 			while (agents.size() != newSize)
 				agents.pop_back();
 		}
-		else std::cout << "Not enough agents to remove" << std::endl;
+		else cout << "Not enough agents to remove" << endl;
 	}
 }
 
@@ -366,7 +419,7 @@ void Swarm::resizeDimensions(int newNum) {
 				removeDimParams();
 			}
 		}
-		else std::cout << "Swarm::resizeDims -> can't remove dimensions" << std::endl;
+		else cout << "Swarm::resizeDims -> can't remove dimensions" << endl;
 	}
 }
 
