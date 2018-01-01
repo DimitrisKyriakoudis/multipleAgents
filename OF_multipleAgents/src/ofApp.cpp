@@ -8,6 +8,9 @@ void ofApp::setup() {
 	//GUI = new ofxDatGui(ofxDatGuiAnchor::TOP_LEFT);
 	//ofBackground(100, 50, 50);
 
+	//ofSetWindowShape(1000, 1000);
+	//ofToggleFullscreen();
+	ofSetWindowShape(1920, 1080);
 	numAgents = 20;
 
 	ofSetFrameRate(60);
@@ -61,7 +64,7 @@ void ofApp::keyPressed(int key) {
 	}
 	
 	if (key == 'o') {
-		swarm.setNumDimensions(3);
+		swarm.setNumDimensions(5);
 	}
 
 	if(key == 'f')

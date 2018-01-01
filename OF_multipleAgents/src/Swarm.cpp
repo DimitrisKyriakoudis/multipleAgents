@@ -119,20 +119,20 @@ void Swarm::initGuiPanels(int num) {
 		panels[0]->addSlider(s.str(), 0, 1);
 		panels[0]->getSlider(s.str())->bind(distThreshs[i]);
 		//Disturbance Amounts
-panels[1]->addSlider(s.str(), 0, 2);
-panels[1]->getSlider(s.str())->bind(distAmts[i]);
-//Disturbance Exponents
-panels[2]->addSlider(s.str(), 0, 4);
-panels[2]->getSlider(s.str())->bind(distExps[i]);
-//Update Amounts
-panels[3]->addSlider(s.str(), 0, 2);
-panels[3]->getSlider(s.str())->bind(updateAmts[i]);
-//Update amount Exponents
-panels[4]->addSlider(s.str(), 0, 4);
-panels[4]->getSlider(s.str())->bind(updateExps[i]);
-//Goals
-panels[5]->addSlider(s.str(), 0, 1);
-panels[5]->getSlider(s.str())->bind(goals[i]);
+		panels[1]->addSlider(s.str(), 0, 2);
+		panels[1]->getSlider(s.str())->bind(distAmts[i]);
+		//Disturbance Exponents
+		panels[2]->addSlider(s.str(), 0, 4);
+		panels[2]->getSlider(s.str())->bind(distExps[i]);
+		//Update Amounts
+		panels[3]->addSlider(s.str(), 0, 2);
+		panels[3]->getSlider(s.str())->bind(updateAmts[i]);
+		//Update amount Exponents
+		panels[4]->addSlider(s.str(), 0, 4);
+		panels[4]->getSlider(s.str())->bind(updateExps[i]);
+		//Goals
+		panels[5]->addSlider(s.str(), 0, 1);
+		panels[5]->getSlider(s.str())->bind(goals[i]);
 	}
 
 	positionGuiPanels();
@@ -331,7 +331,7 @@ int Swarm::size() {
 
 //--------------------------------------------------------------
 void Swarm::draw() {
-	int lineWidth = 550;
+	int lineWidth = 3*ofGetWidth()/4;
 	int initX = 350;
 	int padding = 100;
 	int height = ofGetHeight() - 2 * padding;
@@ -376,6 +376,8 @@ void Swarm::resizeSwarm(int newSize) {
 			for (int j = 0; j < numDimensions; j++) {
 				temp.push_back(ofRandom(0, 1));
 			}
+			previousValues.push_back(temp);
+			nextValues.push_back(temp);
 			Agent a = Agent(temp);
 			agents.push_back(a);
 		}
@@ -385,6 +387,8 @@ void Swarm::resizeSwarm(int newSize) {
 		if (currentSize >= 2) {
 			//Keep removing agents until size is as desired
 			while (agents.size() != newSize)
+				previousValues.pop_back();
+				nextValues.pop_back();
 				agents.pop_back();
 		}
 		else cout << "Not enough agents to remove" << endl;
@@ -399,7 +403,12 @@ void Swarm::resizeDimensions(int newNum) {
 	if (diff > 0) {
 		//Add dimensions to all agents
 		for (int i = 0; i < agents.size(); i++) {
-			for (int k = 0; k < diff; k++) agents[i].addDimension(initValue);
+			for (int k = 0; k < diff; k++) {
+				agents[i].addDimension(initValue);
+
+				previousValues[i].push_back(initValue);
+				nextValues[i].push_back(initValue);
+			}
 		}
 
 		//Add gui sliders and elements to the parameter vectors to match
@@ -412,7 +421,11 @@ void Swarm::resizeDimensions(int newNum) {
 		//Remove dimensions from all agents (only if there are at least 2 left)
 		if (numDimensions + diff >= 2) {
 			for (int i = 0; i < agents.size(); i++) {
-				for (int k = 0; k < abs(diff); k++) agents[i].removeDimension();
+				for (int k = 0; k < abs(diff); k++) {
+					agents[i].removeDimension();
+					previousValues[i].pop_back();
+					nextValues[i].pop_back();
+				}
 			}
 			//Remove dimension parameters to match
 			for (int k = 0; k < abs(diff); k++) {
