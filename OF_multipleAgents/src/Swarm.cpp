@@ -26,10 +26,16 @@ Swarm::Swarm() {
 	initPanelX = 10;
 	initPanelY = 10;
 	controlTogglesPanel = new ofxDatGui(initPanelX, initPanelY);
-	controlTogglesPanel->addHeader("Behavior Toggles");
+	controlTogglesPanel->addHeader("General Controls");
 	controlTogglesPanel->addSlider("Number of Agents", 2, 100)->bind(numAgents);
 	controlTogglesPanel->addSlider("Number of Dimensions", 1, 20)->bind(numDimensions);
 	controlTogglesPanel->addToggle("Elitist Approach", boolElitist);
+
+	controlTogglesPanel->addSlider("Updates per Loop", 1, 50)->bind(updatesPerLoop);
+	controlTogglesPanel->getSlider("updates per loop")->setPrecision(0);
+	controlTogglesPanel->addSlider("Loop Every", 1, 100)->bind(loopEvery);
+	controlTogglesPanel->getSlider("loop every")->setPrecision(0);
+
 	controlTogglesPanel->addToggle("Disturb Before Update", boolDisturbBeforeUpdate);
 	controlTogglesPanel->addToggle("Separate Disturbance Thresholds", boolDisturbSeparately);
 	//
@@ -180,14 +186,14 @@ void Swarm::update() {
 	//oscUpdateParameters();
 	checkForNumChanges();
 
-	drawPhase = (ofGetFrameNum() % loopEvery) / (float)loopEvery;
-	if (drawPhase == 0) {
+	interpPhase = (ofGetFrameNum() % loopEvery) / (float)loopEvery;
+	if (interpPhase == 0) {
 
 		for (int i = 0; i < updatesPerLoop; i++) {
 			updateSwarm();
 		}
 
-		//Passing on the old values
+		//Passing on the old values and updating the new
 		previousValues = nextValues;
 		for (int i = 0; i < numAgents; i++) {
 			for (int d = 0; d < numDimensions; d++) {
@@ -223,11 +229,7 @@ void Swarm::updateSwarm() {
 		if (boolDisturbSeparately)
 			disturbAgents(distThreshs, distExps, distAmts);
 		else disturbAgents(singleThresh, distExps, distAmts);
-	}
-
-
-	///////////////
-	
+	}	
 }
 
 //--------------------------------------------------------------
@@ -352,7 +354,7 @@ void Swarm::draw() {
 		ofSetColor(219, 20, 91, 160);
 		for (int i = 0; i < numAgents; i++) {
 			if (i != bestAgentIndx) {
-				float pos = ofLerp(previousValues[i][d], nextValues[i][d], drawPhase);
+				float pos = ofLerp(previousValues[i][d], nextValues[i][d], interpPhase);
 				ofDrawCircle(initX + pos*lineWidth, y, 8);
 			}
 		}

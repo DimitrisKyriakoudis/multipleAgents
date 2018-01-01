@@ -60,7 +60,7 @@ private:
 	//draw phase -> where in the interpolation cycle we are (0 to 1)
 	//loopEvery -> how many frames does one update cycle loop over
 	//updatesPerLoop -> how many times we update at once
-	float drawPhase = 0;
+	float interpPhase = 0;
 	int loopEvery = 15;
 	int updatesPerLoop = 5;
 

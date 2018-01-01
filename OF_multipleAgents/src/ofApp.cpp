@@ -52,7 +52,7 @@ void ofApp::update() {
 //--------------------------------------------------------------
 void ofApp::draw() {
 	if (isRunning) {
-		ofBackground(51);
+		ofBackground(61);
 		swarm.draw();
 	}
 }
