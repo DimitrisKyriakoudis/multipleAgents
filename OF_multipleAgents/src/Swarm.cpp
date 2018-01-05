@@ -27,12 +27,18 @@ Swarm::Swarm() {
 	initPanelY = 10;
 	controlTogglesPanel = new ofxDatGui(initPanelX, initPanelY);
 	controlTogglesPanel->addHeader("General Controls");
+
 	controlTogglesPanel->addSlider("Number of Agents", 2, 100)->bind(numAgents);
+	controlTogglesPanel->getSlider("Number of Agents")->setPrecision(0);
+
 	controlTogglesPanel->addSlider("Number of Dimensions", 1, 20)->bind(numDimensions);
+	controlTogglesPanel->getSlider("Number of Dimensions")->setPrecision(0);
+
 	controlTogglesPanel->addToggle("Elitist Approach", boolElitist);
 
 	controlTogglesPanel->addSlider("Updates per Loop", 1, 50)->bind(updatesPerLoop);
 	controlTogglesPanel->getSlider("updates per loop")->setPrecision(0);
+
 	controlTogglesPanel->addSlider("Loop Every", 1, 100)->bind(loopEvery);
 	controlTogglesPanel->getSlider("loop every")->setPrecision(0);
 
@@ -41,6 +47,7 @@ Swarm::Swarm() {
 	//
 	controlTogglesPanel->addSlider("Single Disturbance Threshold", 0, 1)->bind(singleThresh);
 	controlTogglesPanel->onToggleEvent(this, &Swarm::onToggleEvent);
+	ofxDatGuiLog::quiet();
 
 	//Resize vector to hold the vectors of sliders for each panel/parameter
 	for (int i = 0; i < numDimensions; i++) {
@@ -59,7 +66,7 @@ Swarm::Swarm() {
 	for (int i = 0; i < numAgents; i++) {
 		vector<float> tempValues;
 
-		
+
 		vector<float> tempPrevious = {};
 		vector<float> tempNext = {};
 
@@ -116,7 +123,7 @@ void Swarm::initGuiPanels(int num) {
 		panels.push_back(new ofxDatGui());
 		panels[i]->addHeader(panelNames[i]);
 	}
-	
+
 	for (int i = 0; i < num; i++) {
 		stringstream s;
 		s << "Dimension " << i + 1;
@@ -229,7 +236,7 @@ void Swarm::updateSwarm() {
 		if (boolDisturbSeparately)
 			disturbAgents(distThreshs, distExps, distAmts);
 		else disturbAgents(singleThresh, distExps, distAmts);
-	}	
+	}
 }
 
 //--------------------------------------------------------------
@@ -333,13 +340,13 @@ int Swarm::size() {
 
 //--------------------------------------------------------------
 void Swarm::draw() {
-	int lineWidth = 3*ofGetWidth()/4;
+	int lineWidth = 3 * ofGetWidth() / 4;
 	int initX = 350;
 	int padding = 100;
 	int height = ofGetHeight() - 2 * padding;
 
 	/* padding       (height-padding) */
-	
+
 	for (int d = 0; d < numDimensions; d++) {
 		float y = padding + height * ((float)d / numDimensions);
 
@@ -348,8 +355,8 @@ void Swarm::draw() {
 		//Draw SS lines
 		ofDrawLine(initX, y, initX + lineWidth, y);
 		//Draw target values for each dimension
-		ofDrawCircle(initX+goals[d] * lineWidth, y, 20);
-	
+		ofDrawCircle(initX + goals[d] * lineWidth, y, 20);
+
 		//Draw each agent's position in that dimension
 		ofSetColor(219, 20, 91, 160);
 		for (int i = 0; i < numAgents; i++) {
@@ -373,7 +380,8 @@ void Swarm::resizeSwarm(int newSize) {
 	//If we should increase
 	if (diff > 0) {
 		//Keep adding agents until size is as desired
-		while(agents.size() != newSize){
+		while (agents.size() != newSize) {
+			//Initialize agents to random position
 			vector<float> temp;
 			for (int j = 0; j < numDimensions; j++) {
 				temp.push_back(ofRandom(0, 1));
@@ -388,10 +396,11 @@ void Swarm::resizeSwarm(int newSize) {
 	else if (diff < 0) {
 		if (currentSize >= 2) {
 			//Keep removing agents until size is as desired
-			while (agents.size() != newSize)
+			while (agents.size() != newSize) {
 				previousValues.pop_back();
 				nextValues.pop_back();
 				agents.pop_back();
+			}
 		}
 		else cout << "Not enough agents to remove" << endl;
 	}

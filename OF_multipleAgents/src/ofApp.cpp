@@ -40,10 +40,8 @@ void ofApp::setup() {
 
 //--------------------------------------------------------------
 void ofApp::update() {
-
-	std::cout << ofGetFrameRate() << std::endl;
+	//std::cout << ofGetFrameRate() << std::endl;
 	swarm.setGoals((float)ofGetMouseX() / ofGetWidth(), (float)ofGetMouseY() / ofGetHeight());
-	
 	
 	if (isRunning)
 		swarm.update();
