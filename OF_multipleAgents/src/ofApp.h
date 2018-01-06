@@ -31,7 +31,17 @@ class ofApp : public ofBaseApp{
 		/*ofxDatGui* GUI;*/
 
 		//Agent agent;
-		Swarm swarm;
+		//Swarm swarm;
+		Swarm fboSwarm;
+
 		int numAgents;
-		
+		int numDimensions;
+		bool isRunning = true;
+
+		int framesLength;
+		int currentFrame;
+		float hue;
+
+		//Frame Buffer Object to draw the image on
+		ofFbo fbo;
 };

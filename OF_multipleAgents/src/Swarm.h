@@ -17,6 +17,8 @@ class Swarm{
 public:
 	Swarm();
 
+	void setup(int, int);
+
 	int size();
 	void draw();
 	void update();
@@ -24,20 +26,35 @@ public:
 	void setDisturbSeparately(bool);
 	void setNumAgents(int);
 	void setNumDimensions(int);
-	//seconds until next update
-	void setUpdateEvery(double);
+
+	vector<vector<float> >& getLerpedValues();
+
+	//frames until next update
+	void setLoopEvery(int);
+	void setUpdatesPerLoop(int);
 
 	//Overloaded disturbance functions that use either a single or an individual threshold for every dimension
 	void disturbAgents(const vector<float>&, const vector<float>&, const vector<float>&);
 	void disturbAgents(float, const vector<float>&, const vector<float>&);
+
+	void setDistThreshs(const vector<float>&);
+	void setDistAmts(const vector<float>&);
+	void setDistExps(const vector<float>&);
+
+	void setUpdateAmts(const vector<float>&);
+	void setUpdateExps(const vector<float>&);
+
+
+	void showGui(bool);
 
 	void reset();
 	void resetAllTo(float);
 	void resizeSwarm(int);
 	void resizeDimensions(int);
 	void setElitist(bool);
-
 	void setGoals(const vector<float>&);
+	void setDrawColour(ofColor);
+	void setBestColour(ofColor);
 
 	int numAgents;
 	int currNumAgents;
@@ -56,6 +73,10 @@ private:
 	void removeDimParams();
 	void positionGuiPanels();
 	void checkForNumChanges();
+	void lerpValues();
+
+	ofColor drawColour;
+	ofColor bestColour;
 
 	//draw phase -> where in the interpolation cycle we are (0 to 1)
 	//loopEvery -> how many frames does one update cycle loop over
@@ -83,6 +104,7 @@ private:
 	//Vectors for interpolation
 	vector<vector<float> > previousValues;
 	vector<vector<float> > nextValues;
+	vector<vector<float> > lerpedValues;
 
 	///////////////////
 	vector<ofParameter<float> > dts;

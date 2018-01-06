@@ -1,10 +1,13 @@
 #include "Swarm.h"
 
 Swarm::Swarm() {
+}
+
+void Swarm::setup(int nA, int nD) {
 	//Initialise parameters to default values
 	//---------------------------------------
-	numAgents = 30;
-	numDimensions = 4;
+	numAgents = nA;
+	numDimensions = nD;
 	//Used to update swarm sizes when sliders change
 	currNumAgents = numAgents;
 	currNumDimensions = numDimensions;
@@ -67,19 +70,20 @@ Swarm::Swarm() {
 	for (int i = 0; i < numAgents; i++) {
 		vector<float> tempValues;
 
-
 		vector<float> tempPrevious = {};
 		vector<float> tempNext = {};
 
 		for (int i = 0; i < numDimensions; i++) {
 			float t = ofRandom(0, 1);
 			tempValues.push_back(t);
+
 			tempPrevious.push_back(0);
 			tempNext.push_back(t);
 		}
-
+		//Initializing lerp vectors
 		previousValues.push_back(tempPrevious);
 		nextValues.push_back(tempNext);
+		lerpedValues.push_back(tempPrevious);
 
 		Agent a = Agent(tempValues);
 		agents.push_back(a);
@@ -88,6 +92,91 @@ Swarm::Swarm() {
 	//TODO: Initialise OSC (?)
 	//---------------------------------------
 }
+
+void Swarm::showGui(bool b) {
+	controlTogglesPanel->setVisible(b);
+
+	for (int i = 0; i < panels.size(); i++) {
+		panels[i]->setVisible(b);
+	}
+}
+
+void Swarm::resetAllTo(float f) {
+	for (int i = 0; i < numAgents; i++) {
+		for (int d = 0; d < numDimensions; d++) {
+			agents[i].values[d] = f;
+			previousValues[i][d] = f;
+			nextValues[i][d] = f;
+			lerpedValues[i][d] = f;
+		}
+	}
+}
+
+void Swarm::setDistThreshs(const vector<float>& dt) {
+	if (numDimensions == dt.size()) {
+		for (int i = 0; i < dt.size(); i++) {
+			distThreshs[i] = dt[i];
+		}
+	}
+	else {
+		cout << "SetDistThreshs: vectors don't match!" << endl;
+	}
+}
+
+void Swarm::setDistAmts(const vector<float>& amts) {
+	if (numDimensions == amts.size()) {
+		for (int i = 0; i < amts.size(); i++) {
+			distAmts[i] = amts[i];
+		}
+	}
+	else {
+		cout << "SetDistAmts: vectors don't match!" << endl;
+	}
+}
+
+void Swarm::setDistExps(const vector<float>& exps) {
+	if (numDimensions == exps.size()) {
+		for (int i = 0; i < exps.size(); i++) {
+			distExps[i] = exps[i];
+		}
+	}
+	else {
+		cout << "SetDistExps: vectors don't match!" << endl;
+	}
+}
+
+void Swarm::setUpdateAmts(const vector<float>& amts) {
+	if (numDimensions == amts.size()) {
+		for (int i = 0; i < amts.size(); i++) {
+			updateAmts[i] = amts[i];
+		}
+	}
+	else {
+		cout << "SetUpdateAmts: vectors don't match!" << endl;
+	}
+}
+
+void Swarm::setUpdateExps(const vector<float>& exps) {
+	if (numDimensions == exps.size()) {
+		for (int i = 0; i < exps.size(); i++) {
+			updateExps[i] = exps[i];
+		}
+	}
+	else {
+		cout << "SetUpdateExps: vectors don't match!" << endl;
+	}
+}
+
+vector<vector<float> >& Swarm::getLerpedValues(){
+	return lerpedValues;
+}
+
+//--------------------------------------------------------------
+void Swarm::setDisturbSeparately(bool b) {
+	boolDisturbSeparately = b;
+	controlTogglesPanel->getToggle("Separate Disturbance Thresholds")->setChecked(b);
+}
+
 //--------------------------------------------------------------
 void Swarm::onToggleEvent(ofxDatGuiToggleEvent e) {
 	if (e.target->is("Elitist Approach")) {
@@ -209,6 +298,9 @@ void Swarm::update() {
 			}
 		}
 	}
+	else {
+		lerpValues();
+	}
 }
 
 //--------------------------------------------------------------
@@ -216,6 +308,11 @@ void Swarm::update() {
 void Swarm::setGoals(float x, float y) {
 	goals[0] = x;
 	goals[1] = y;
+}
+void Swarm::setGoals(const vector<float>& newGoals) {
+	for (int i = 0; i < newGoals.size(); i++) {
+		goals[i] = newGoals[i];
+	}
 }
 
 //--------------------------------------------------------------
@@ -238,6 +335,18 @@ void Swarm::updateSwarm() {
 			disturbAgents(distThreshs, distExps, distAmts);
 		else disturbAgents(singleThresh, distExps, distAmts);
 	}
+}
+
+void Swarm::setElitist(bool b) {
+	boolElitist = b;
+	controlTogglesPanel->getToggle("Elitist Approach")->setChecked(b);
+}
+
+void Swarm::setLoopEvery(int e) {
+	loopEvery = e;
+}
+void Swarm::setUpdatesPerLoop(int e) {
+	updatesPerLoop = e;
 }
 
 //--------------------------------------------------------------
@@ -339,6 +448,13 @@ int Swarm::size() {
 	return agents.size();
 }
 
+void Swarm::setDrawColour(ofColor c) {
+	drawColour = c;
+}
+void Swarm::setBestColour(ofColor c) {
+	bestColour = c;
+}
+
 //--------------------------------------------------------------
 void Swarm::draw() {
 	int lineWidth = 3 * ofGetWidth() / 4;
@@ -359,18 +475,24 @@ void Swarm::draw() {
 		ofDrawCircle(initX + goals[d] * lineWidth, y, 20);
 
 		//Draw each agent's position in that dimension
-		ofSetColor(219, 20, 91, 160);
+		ofSetColor(drawColour);
 		for (int i = 0; i < numAgents; i++) {
 			if (i != bestAgentIndx) {
-				float pos = ofLerp(previousValues[i][d], nextValues[i][d], interpPhase);
-				ofDrawCircle(initX + pos*lineWidth, y, 8);
+				ofDrawCircle(initX + lerpedValues[i][d] *lineWidth, y, 8);
 			}
 		}
 
 		//Draw best agent in that dimension
-		ofSetColor(120, 120, 255);
-		float pos = agents[bestAgentIndx].values[d];
-		ofDrawCircle(initX + pos*lineWidth, y, 8);
+		ofSetColor(bestColour);
+		ofDrawCircle(initX + lerpedValues[bestAgentIndx][d]	* lineWidth, y, 8);
+	}
+}
+
+void Swarm::lerpValues() {
+	for (int i = 0; i < numAgents; i++) {
+		for (int d = 0; d < numDimensions; d++) {
+			lerpedValues[i][d] = ofLerp(previousValues[i][d], nextValues[i][d], interpPhase);
+		}
 	}
 }
 
