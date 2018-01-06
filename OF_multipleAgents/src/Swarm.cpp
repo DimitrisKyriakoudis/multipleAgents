@@ -27,6 +27,8 @@ Swarm::Swarm() {
 	initPanelY = 10;
 	controlTogglesPanel = new ofxDatGui(initPanelX, initPanelY);
 	controlTogglesPanel->addHeader("General Controls");
+	ofxDatGuiLog::quiet();
+
 
 	controlTogglesPanel->addSlider("Number of Agents", 2, 100)->bind(numAgents);
 	controlTogglesPanel->getSlider("Number of Agents")->setPrecision(0);
@@ -47,7 +49,6 @@ Swarm::Swarm() {
 	//
 	controlTogglesPanel->addSlider("Single Disturbance Threshold", 0, 1)->bind(singleThresh);
 	controlTogglesPanel->onToggleEvent(this, &Swarm::onToggleEvent);
-	ofxDatGuiLog::quiet();
 
 	//Resize vector to hold the vectors of sliders for each panel/parameter
 	for (int i = 0; i < numDimensions; i++) {
