@@ -38,6 +38,7 @@ public:
 	void disturbAgents(float, const vector<float>&, const vector<float>&);
 
 	void setDistThreshs(const vector<float>&);
+	void setSingleThresh(float);
 	void setDistAmts(const vector<float>&);
 	void setDistExps(const vector<float>&);
 
@@ -49,6 +50,7 @@ public:
 
 	void reset();
 	void resetAllTo(float);
+	void resetAllTo(const vector<float>&);
 	void resizeSwarm(int);
 	void resizeDimensions(int);
 	void setElitist(bool);
@@ -86,6 +88,8 @@ private:
 	int updatesPerLoop = 5;
 
 
+
+	ofImage img;
 
 	//double time, timer, updateEvery;
 

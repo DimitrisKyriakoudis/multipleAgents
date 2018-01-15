@@ -32,7 +32,6 @@ void Swarm::setup(int nA, int nD) {
 	controlTogglesPanel->addHeader("General Controls");
 	ofxDatGuiLog::quiet();
 
-
 	controlTogglesPanel->addSlider("Number of Agents", 2, 100)->bind(numAgents);
 	controlTogglesPanel->getSlider("Number of Agents")->setPrecision(0);
 
@@ -49,7 +48,7 @@ void Swarm::setup(int nA, int nD) {
 
 	controlTogglesPanel->addToggle("Disturb Before Update", boolDisturbBeforeUpdate);
 	controlTogglesPanel->addToggle("Separate Disturbance Thresholds", boolDisturbSeparately);
-	//
+	
 	controlTogglesPanel->addSlider("Single Disturbance Threshold", 0, 1)->bind(singleThresh);
 	controlTogglesPanel->onToggleEvent(this, &Swarm::onToggleEvent);
 
@@ -58,14 +57,9 @@ void Swarm::setup(int nA, int nD) {
 		addParamDimension();
 	}
 
-	cout << "dimensions done" << endl;
-
-
 	initGuiPanels(numDimensions);
-	cout << "init gui panels done" << endl;
 
 	//Initialise agents with defaults
-	//TODO: initialise at starting value instead of random
 	//---------------------------------------
 	for (int i = 0; i < numAgents; i++) {
 		vector<float> tempValues;
@@ -89,193 +83,6 @@ void Swarm::setup(int nA, int nD) {
 		agents.push_back(a);
 	}
 
-	//TODO: Initialise OSC (?)
-	//---------------------------------------
-}
-
-void Swarm::showGui(bool b) {
-	controlTogglesPanel->setVisible(b);
-
-	for (int i = 0; i < panels.size(); i++) {
-		panels[i]->setVisible(b);
-	}
-}
-
-void Swarm::resetAllTo(float f) {
-	for (int i = 0; i < numAgents; i++) {
-		for (int d = 0; d < numDimensions; d++) {
-			agents[i].values[d] = f;
-			previousValues[i][d] = f;
-			nextValues[i][d] = f;
-			lerpedValues[i][d] = f;
-		}
-	}
-}
-
-void Swarm::setDistThreshs(const vector<float>& dt) {
-	if (numDimensions == dt.size()) {
-		for (int i = 0; i < dt.size(); i++) {
-			distThreshs[i] = dt[i];
-		}
-	}
-	else {
-		cout << "SetDistThreshs: vectors don't match!" << endl;
-	}
-}
-
-void Swarm::setDistAmts(const vector<float>& amts) {
-	if (numDimensions == amts.size()) {
-		for (int i = 0; i < amts.size(); i++) {
-			distAmts[i] = amts[i];
-		}
-	}
-	else {
-		cout << "SetDistAmts: vectors don't match!" << endl;
-	}
-}
-
-void Swarm::setDistExps(const vector<float>& exps) {
-	if (numDimensions == exps.size()) {
-		for (int i = 0; i < exps.size(); i++) {
-			distExps[i] = exps[i];
-		}
-	}
-	else {
-		cout << "SetDistExps: vectors don't match!" << endl;
-	}
-}
-
-void Swarm::setUpdateAmts(const vector<float>& amts) {
-	if (numDimensions == amts.size()) {
-		for (int i = 0; i < amts.size(); i++) {
-			updateAmts[i] = amts[i];
-		}
-	}
-	else {
-		cout << "SetUpdateAmts: vectors don't match!" << endl;
-	}
-}
-
-void Swarm::setUpdateExps(const vector<float>& exps) {
-	if (numDimensions == exps.size()) {
-		for (int i = 0; i < exps.size(); i++) {
-			updateExps[i] = exps[i];
-		}
-	}
-	else {
-		cout << "SetUpdateExps: vectors don't match!" << endl;
-	}
-}
-
-vector<vector<float> >& Swarm::getLerpedValues(){
-	return lerpedValues;
-}
-
-//--------------------------------------------------------------
-void Swarm::setDisturbSeparately(bool b) {
-	boolDisturbSeparately = b;
-	controlTogglesPanel->getToggle("Separate Disturbance Thresholds")->setChecked(b);
-}
-
-//--------------------------------------------------------------
-void Swarm::onToggleEvent(ofxDatGuiToggleEvent e) {
-	if (e.target->is("Elitist Approach")) {
-		boolElitist = !boolElitist;
-		cout << "Elitist Approach: " << boolElitist << endl;
-	}
-	else if (e.target->is("Disturb Before Update")) {
-		boolDisturbBeforeUpdate = !boolDisturbBeforeUpdate;
-		cout << "Disturb Before Update: " << boolDisturbBeforeUpdate << endl;
-	}
-	else if (e.target->is("Separate Disturbance Thresholds")) {
-		boolDisturbSeparately = !boolDisturbSeparately;
-		cout << "Separate Disturbance Thresholds: " << boolDisturbSeparately << endl;
-	}
-}
-
-//--------------------------------------------------------------
-void Swarm::initGuiPanels(int num) {
-	if (distThreshs.size() != num) {
-		cout << "initGuiPanels: sizes don't match" << endl;
-		return;
-	}
-
-	vector<string> panelNames = {
-		"Disturbance Thresholds",
-		"Disturbance Amounts" ,
-		"Disturbance Amount Exponents",
-		"Update Amounts",
-		"Update Amount Exponents",
-		"Goals"
-	};
-
-	for (int i = 0; i < panelNames.size(); i++) {
-		panels.push_back(new ofxDatGui());
-		panels[i]->addHeader(panelNames[i]);
-	}
-
-	for (int i = 0; i < num; i++) {
-		stringstream s;
-		s << "Dimension " << i + 1;
-
-		//Disturbance Thresholds
-		panels[0]->addSlider(s.str(), 0, 1);
-		panels[0]->getSlider(s.str())->bind(distThreshs[i]);
-		//Disturbance Amounts
-		panels[1]->addSlider(s.str(), 0, 2);
-		panels[1]->getSlider(s.str())->bind(distAmts[i]);
-		//Disturbance Exponents
-		panels[2]->addSlider(s.str(), 0, 4);
-		panels[2]->getSlider(s.str())->bind(distExps[i]);
-		//Update Amounts
-		panels[3]->addSlider(s.str(), 0, 2);
-		panels[3]->getSlider(s.str())->bind(updateAmts[i]);
-		//Update amount Exponents
-		panels[4]->addSlider(s.str(), 0, 4);
-		panels[4]->getSlider(s.str())->bind(updateExps[i]);
-		//Goals
-		panels[5]->addSlider(s.str(), 0, 1);
-		panels[5]->getSlider(s.str())->bind(goals[i]);
-	}
-
-	positionGuiPanels();
-}
-
-//--------------------------------------------------------------
-void Swarm::deleteGuiPanels() {
-	for (int i = 0; i < panels.size(); i++) {
-		panels[i]->~ofxDatGui();
-		delete panels[i];
-	}
-
-	panels.clear();
-}
-
-//--------------------------------------------------------------
-void Swarm::checkForNumChanges() {
-	if (currNumAgents != numAgents) {
-		setNumAgents(numAgents);
-	}
-	if (currNumDimensions != numDimensions) {
-		setNumDimensions(numDimensions);
-	}
-}
-
-//--------------------------------------------------------------
-void Swarm::setNumAgents(int num) {
-	resizeSwarm(num);
-	numAgents = num;
-}
-
-//--------------------------------------------------------------
-void Swarm::setNumDimensions(int num) {
-	deleteGuiPanels();
-	resizeDimensions(num);
-	initGuiPanels(num);
-
-	numDimensions = num;
-	currNumDimensions = num;
-	cout << "Dimensions resized!" << endl;
 }
 
 //--------------------------------------------------------------
@@ -317,7 +124,6 @@ void Swarm::setGoals(const vector<float>& newGoals) {
 
 //--------------------------------------------------------------
 void Swarm::updateSwarm() {
-
 	if (boolDisturbBeforeUpdate) {
 		//Supply either a vector of thresholds or a single threshold for all dimensions
 		if (boolDisturbSeparately)
@@ -424,10 +230,6 @@ int Swarm::findBestNeighbor(int currentAgent) {
 }
 
 //--------------------------------------------------------------
-//void Swarm::setUpdateFrequency(double freq) {
-//
-//}
-//--------------------------------------------------------------
 void Swarm::updateFitnesses(const vector<float>& goals) {
 	float minScore = FLT_MAX;
 	//int indexOfBest = 0;
@@ -475,16 +277,16 @@ void Swarm::draw() {
 		ofDrawCircle(initX + goals[d] * lineWidth, y, 20);
 
 		//Draw each agent's position in that dimension
-		ofSetColor(drawColour);
+		ofSetColor(200, 0, 0, 100);
 		for (int i = 0; i < numAgents; i++) {
 			if (i != bestAgentIndx) {
-				ofDrawCircle(initX + lerpedValues[i][d] *lineWidth, y, 8);
+				ofDrawCircle(initX + lerpedValues[i][d] * lineWidth, y, 8);
 			}
 		}
 
 		//Draw best agent in that dimension
-		ofSetColor(bestColour);
-		ofDrawCircle(initX + lerpedValues[bestAgentIndx][d]	* lineWidth, y, 8);
+		ofSetColor(50, 200, 255, 150);
+		ofDrawCircle(initX + lerpedValues[bestAgentIndx][d] * lineWidth, y, 8);
 	}
 }
 
@@ -599,4 +401,209 @@ void Swarm::removeDimParams() {
 	updateAmts.pop_back();
 	updateExps.pop_back();
 	goals.pop_back();
+}
+
+
+void Swarm::showGui(bool b) {
+	controlTogglesPanel->setVisible(b);
+
+	for (int i = 0; i < panels.size(); i++) {
+		panels[i]->setVisible(b);
+	}
+}
+
+void Swarm::setSingleThresh(float dt) {
+	singleThresh = dt;
+}
+
+void Swarm::resetAllTo(const vector<float>& target) {
+	if (target.size() != numDimensions)
+		cout << "resetAllTo: Sizes don't match" << endl;
+	else {
+		for (int i = 0; i < numAgents; i++) {
+			for (int d = 0; d < numDimensions; d++) {
+				agents[i].values[d] = target[d];
+				previousValues[i][d] = target[d];
+				nextValues[i][d] = target[d];
+				lerpedValues[i][d] = target[d];
+			}
+		}
+	}
+}
+
+void Swarm::resetAllTo(float f) {
+	for (int i = 0; i < numAgents; i++) {
+		for (int d = 0; d < numDimensions; d++) {
+			agents[i].values[d] = f;
+			previousValues[i][d] = f;
+			nextValues[i][d] = f;
+			lerpedValues[i][d] = f;
+		}
+	}
+}
+
+void Swarm::setDistThreshs(const vector<float>& dt) {
+	if (numDimensions == dt.size()) {
+		for (int i = 0; i < dt.size(); i++) {
+			distThreshs[i] = dt[i];
+		}
+	}
+	else {
+		cout << "SetDistThreshs: vectors don't match!" << endl;
+	}
+}
+
+void Swarm::setDistAmts(const vector<float>& amts) {
+	if (numDimensions == amts.size()) {
+		for (int i = 0; i < amts.size(); i++) {
+			distAmts[i] = amts[i];
+		}
+	}
+	else {
+		cout << "SetDistAmts: vectors don't match!" << endl;
+	}
+}
+
+void Swarm::setDistExps(const vector<float>& exps) {
+	if (numDimensions == exps.size()) {
+		for (int i = 0; i < exps.size(); i++) {
+			distExps[i] = exps[i];
+		}
+	}
+	else {
+		cout << "SetDistExps: vectors don't match!" << endl;
+	}
+}
+
+void Swarm::setUpdateAmts(const vector<float>& amts) {
+	if (numDimensions == amts.size()) {
+		for (int i = 0; i < amts.size(); i++) {
+			updateAmts[i] = amts[i];
+		}
+	}
+	else {
+		cout << "SetUpdateAmts: vectors don't match!" << endl;
+	}
+}
+
+void Swarm::setUpdateExps(const vector<float>& exps) {
+	if (numDimensions == exps.size()) {
+		for (int i = 0; i < exps.size(); i++) {
+			updateExps[i] = exps[i];
+		}
+	}
+	else {
+		cout << "SetUpdateExps: vectors don't match!" << endl;
+	}
+}
+
+vector<vector<float> >& Swarm::getLerpedValues() {
+	return lerpedValues;
+}
+
+//--------------------------------------------------------------
+void Swarm::setDisturbSeparately(bool b) {
+	boolDisturbSeparately = b;
+	controlTogglesPanel->getToggle("Separate Disturbance Thresholds")->setChecked(b);
+}
+
+//--------------------------------------------------------------
+void Swarm::onToggleEvent(ofxDatGuiToggleEvent e) {
+	if (e.target->is("Elitist Approach")) {
+		boolElitist = !boolElitist;
+		cout << "Elitist Approach: " << boolElitist << endl;
+	}
+	else if (e.target->is("Disturb Before Update")) {
+		boolDisturbBeforeUpdate = !boolDisturbBeforeUpdate;
+		cout << "Disturb Before Update: " << boolDisturbBeforeUpdate << endl;
+	}
+	else if (e.target->is("Separate Disturbance Thresholds")) {
+		boolDisturbSeparately = !boolDisturbSeparately;
+		cout << "Separate Disturbance Thresholds: " << boolDisturbSeparately << endl;
+	}
+}
+
+//--------------------------------------------------------------
+void Swarm::initGuiPanels(int num) {
+	if (distThreshs.size() != num) {
+		cout << "initGuiPanels: sizes don't match" << endl;
+		return;
+	}
+
+	vector<string> panelNames = {
+		"Disturbance Thresholds",
+		"Disturbance Amounts" ,
+		"Disturbance Amount Exponents",
+		"Update Amounts",
+		"Update Amount Exponents",
+		"Goals"
+	};
+
+	for (int i = 0; i < panelNames.size(); i++) {
+		panels.push_back(new ofxDatGui());
+		panels[i]->addHeader(panelNames[i]);
+	}
+
+	for (int i = 0; i < num; i++) {
+		stringstream s;
+		s << "Dimension " << i + 1;
+
+		//Disturbance Thresholds
+		panels[0]->addSlider(s.str(), 0, 1);
+		panels[0]->getSlider(s.str())->bind(distThreshs[i]);
+		//Disturbance Amounts
+		panels[1]->addSlider(s.str(), 0, 2);
+		panels[1]->getSlider(s.str())->bind(distAmts[i]);
+		//Disturbance Exponents
+		panels[2]->addSlider(s.str(), 0, 4);
+		panels[2]->getSlider(s.str())->bind(distExps[i]);
+		//Update Amounts
+		panels[3]->addSlider(s.str(), 0, 2);
+		panels[3]->getSlider(s.str())->bind(updateAmts[i]);
+		//Update amount Exponents
+		panels[4]->addSlider(s.str(), 0, 4);
+		panels[4]->getSlider(s.str())->bind(updateExps[i]);
+		//Goals
+		panels[5]->addSlider(s.str(), 0, 1);
+		panels[5]->getSlider(s.str())->bind(goals[i]);
+	}
+
+	positionGuiPanels();
+}
+
+//--------------------------------------------------------------
+void Swarm::deleteGuiPanels() {
+	for (int i = 0; i < panels.size(); i++) {
+		panels[i]->~ofxDatGui();
+		delete panels[i];
+	}
+
+	panels.clear();
+}
+
+//--------------------------------------------------------------
+void Swarm::checkForNumChanges() {
+	if (currNumAgents != numAgents) {
+		setNumAgents(numAgents);
+	}
+	if (currNumDimensions != numDimensions) {
+		setNumDimensions(numDimensions);
+	}
+}
+
+//--------------------------------------------------------------
+void Swarm::setNumAgents(int num) {
+	resizeSwarm(num);
+	numAgents = num;
+}
+
+//--------------------------------------------------------------
+void Swarm::setNumDimensions(int num) {
+	deleteGuiPanels();
+	resizeDimensions(num);
+	initGuiPanels(num);
+
+	numDimensions = num;
+	currNumDimensions = num;
+	cout << "Dimensions resized!" << endl;
 }

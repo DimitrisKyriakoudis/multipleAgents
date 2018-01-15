@@ -31,8 +31,10 @@ class ofApp : public ofBaseApp{
 		/*ofxDatGui* GUI;*/
 
 		//Agent agent;
-		//Swarm swarm;
+		Swarm swarm;
 		Swarm fboSwarm;
+
+		Swarm swarm1;
 
 		int numAgents;
 		int numDimensions;

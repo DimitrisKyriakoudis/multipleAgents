@@ -9,16 +9,6 @@ Agent::Agent(const vector<float>& vals) {
 	values = vals;
 }
 
-//void Agent::update(const Agent& bestNeighbor, const vector<float>& updateAmt) {
-//	for (int i = 0; i < values.size(); i++) {
-//		float current = values[i];
-//		float neighbor = bestNeighbor.values[i];
-//		float r = ofRandom(0, updateAmt[i]);
-//		float newVal = neighbor + r*(neighbor - current);
-//		newVal = ofClamp(newVal, 0, 1);
-//		values[i] = newVal;
-//	}
-//}
 
 //--------------------------------------------------------------
 void Agent::update(const Agent& bestNeighbor, const Agent& bestInSwarm, const vector<float>& updateAmt, const vector<float>& updateExp, bool elitist) {
@@ -54,6 +44,7 @@ float Agent::getFitness() {
 	return fitness;
 }
 
+//Calculates Euclidean distance between two agents' positions in the space
 //--------------------------------------------------------------
 float Agent::calcDistance(const Agent& otherAgent) {
 	float dist = 0;
@@ -63,10 +54,7 @@ float Agent::calcDistance(const Agent& otherAgent) {
 	return sqrt(dist);
 }
 
-//const vector<float>& Agent::getValues() {
-//	return values;
-//}
-
+//Calculates a random probability of each dimension being 
 //--------------------------------------------------------------
 void Agent::disturb(const vector<float>& thresholds, const vector<float>& exponents, const vector<float>& amounts) {
 	//Make sure sizes match
@@ -86,6 +74,8 @@ void Agent::disturb(const vector<float>& thresholds, const vector<float>& expone
 		}
 	}
 }
+
+//Uses a single disturbance threshold for all dimensions
 //-------------------overloaded-------------------
 void Agent::disturb(float threshold, const vector<float>& exponents, const vector<float>& amounts) {
 	//Make sure sizes match
